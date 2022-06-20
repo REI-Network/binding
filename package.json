@@ -1,0 +1,23 @@
+{
+  "name": "rei-binding",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "cmake-js --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/REI-Network/rei-binding.git"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/REI-Network/rei-binding/issues"
+  },
+  "homepage": "https://github.com/REI-Network/rei-binding#readme",
+  "dependencies": {
+    "cmake-js": "^6.3.2",
+    "abstract-leveldown": "^7.2.0"
+  }
+}

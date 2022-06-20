@@ -1,0 +1,6 @@
+[submodule "leveldb"]
+	path = leveldb
+	url = https://github.com/REI-Network/leveldb
+[submodule "napi-macros"]
+	path = napi-macros
+	url = https://github.com/hyperdivision/napi-macros.git
