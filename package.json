@@ -1,7 +1,7 @@
 {
-  "name": "@rei-network/rei-binding",
+  "name": "@rei-network/binding",
   "version": "0.0.1",
-  "description": "",
+  "description": "C++ binding for rei network",
   "main": "dist/index.js",
   "scripts": {
     "postinstall": "npm run install:leveldb && npm run install:napi-macros && npm run install:snappy && npm run build",
@@ -19,7 +19,9 @@
     "type": "git",
     "url": "git+https://github.com/REI-Network/rei-binding.git"
   },
-  "author": "",
+  "contributors": [
+    "Samlior <samlior@foxmail.com> (https://github.com/samlior/)"
+  ],
   "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/REI-Network/rei-binding/issues"
