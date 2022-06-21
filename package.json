@@ -4,10 +4,12 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "postinstall": "npm run build && npm run build:tsc",
     "build": "cmake-js --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF --CDSNAPPY_BUILD_TESTS=OFF --CDSNAPPY_BUILD_BENCHMARKS=OFF --CDSNAPPY_INSTALL=OFF build",
     "build:tsc": "tsc",
+    "test": "npm run test:leveldown && npm run test:leveldown:gc",
     "test:leveldown": "tape test/leveldown/*-test.js",
-    "test-gc": "node --expose-gc test/gc.js"
+    "test:leveldown:gc": "node --expose-gc test/leveldown/gc.js"
   },
   "repository": {
     "type": "git",
