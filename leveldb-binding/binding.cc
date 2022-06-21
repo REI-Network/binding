@@ -1041,7 +1041,7 @@ struct OpenWorker final : public BaseWorker
     OpenWorker(napi_env env, Database *database, napi_value callback, const std::string &location,
                const bool createIfMissing, const bool errorIfExists, const bool compression,
                const uint32_t writeBufferSize, const uint32_t blockSize, const uint32_t maxOpenFiles,
-               const uint32_t blockRestartInterval, const uint32_t maxFileSize)
+               const uint32_t blockRestartInterval, const uint32_t maxFileSize, const uint64_t manifestFileMaxSize)
         : BaseWorker(env, database, callback, "leveldown.db.open"), location_(location)
     {
         options_.block_cache = database->blockCache_;
@@ -1054,6 +1054,7 @@ struct OpenWorker final : public BaseWorker
         options_.max_open_files = maxOpenFiles;
         options_.block_restart_interval = blockRestartInterval;
         options_.max_file_size = maxFileSize;
+        options_.manifest_file_max_size = manifestFileMaxSize;
     }
 
     ~OpenWorker()
@@ -1089,12 +1090,13 @@ NAPI_METHOD(db_open)
     const uint32_t maxOpenFiles = Uint32Property(env, options, "maxOpenFiles", 1000);
     const uint32_t blockRestartInterval = Uint32Property(env, options, "blockRestartInterval", 16);
     const uint32_t maxFileSize = Uint32Property(env, options, "maxFileSize", 2 << 20);
+    const uint32_t manifestFileMaxSize = Uint32Property(env, options, "manifestFileMaxSize", 0);
 
     database->blockCache_ = leveldb::NewLRUCache(cacheSize);
 
     napi_value callback = argv[3];
     OpenWorker *worker = new OpenWorker(env, database, callback, location, createIfMissing, errorIfExists, compression,
-                                        writeBufferSize, blockSize, maxOpenFiles, blockRestartInterval, maxFileSize);
+                                        writeBufferSize, blockSize, maxOpenFiles, blockRestartInterval, maxFileSize, manifestFileMaxSize);
     worker->Queue(env);
     delete[] location;
 

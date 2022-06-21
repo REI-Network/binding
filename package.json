@@ -9,7 +9,8 @@
     "build:tsc": "tsc",
     "test": "npm run test:leveldown && npm run test:leveldown:gc",
     "test:leveldown": "tape test/leveldown/*-test.js",
-    "test:leveldown:gc": "node --expose-gc test/leveldown/gc.js"
+    "test:leveldown:gc": "node --expose-gc test/leveldown/gc.js",
+    "test:leveldown:manifest": "tape test/leveldown/manifest-file-size.js"
   },
   "repository": {
     "type": "git",
