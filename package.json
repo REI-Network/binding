@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cmake-js --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF build"
+    "build": "cmake-js --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF --CDSNAPPY_BUILD_TESTS=OFF --CDSNAPPY_BUILD_BENCHMARKS=OFF --CDSNAPPY_INSTALL=OFF build",
+    "build:tsc": "tsc",
+    "test:leveldown": "tape test/leveldown/*-test.js",
+    "test-gc": "node --expose-gc test/gc.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +20,17 @@
   },
   "homepage": "https://github.com/REI-Network/rei-binding#readme",
   "dependencies": {
-    "cmake-js": "^6.3.2",
-    "abstract-leveldown": "^7.2.0"
+    "abstract-leveldown": "^7.2.0",
+    "bindings": "^1.5.0",
+    "cmake-js": "^6.3.2"
+  },
+  "devDependencies": {
+    "async-each": "^1.0.3",
+    "delayed": "^2.0.0",
+    "du": "^1.0.0",
+    "mkfiletree": "^2.0.0",
+    "readfiletree": "^1.0.0",
+    "tape": "^5.0.1",
+    "tempy": "^1.0.1"
   }
 }

@@ -4,3 +4,6 @@
 [submodule "napi-macros"]
 	path = napi-macros
 	url = https://github.com/hyperdivision/napi-macros.git
+[submodule "snappy"]
+	path = snappy
+	url = https://github.com/google/snappy.git

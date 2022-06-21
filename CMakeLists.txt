@@ -40,5 +40,9 @@ if (NOT MSVC)
 	endif()
 endif(NOT MSVC)
 
+# Explicitly tell leveldb that we have snappy
+set(HAVE_SNAPPY 1)
+
+add_subdirectory(snappy)
 add_subdirectory(leveldb)
 add_subdirectory(leveldb-binding)
