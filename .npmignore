@@ -1,0 +1,6 @@
+leveldb
+napi-macros
+snappy
+node_modules
+build
+.vscode
