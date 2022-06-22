@@ -4,8 +4,8 @@
   "description": "C++ binding for rei network",
   "main": "dist/index.js",
   "scripts": {
-    "postinstall": "npm run install:leveldb && npm run install:napi-macros && npm run install:snappy && npm run build",
-    "build": "cmake-js --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF --CDSNAPPY_BUILD_TESTS=OFF --CDSNAPPY_BUILD_BENCHMARKS=OFF --CDSNAPPY_INSTALL=OFF build",
+    "postinstall": "npm run install:leveldb && npm run install:napi-macros && npm run install:snappy && npm run install:evmone && npm run build",
+    "build": "cmake-js --CDEVMONE_TESTING=OFF --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF --CDSNAPPY_BUILD_TESTS=OFF --CDSNAPPY_BUILD_BENCHMARKS=OFF --CDSNAPPY_INSTALL=OFF build",
     "build:tsc": "tsc",
     "test": "npm run test:leveldown && npm run test:leveldown:gc",
     "test:leveldown": "tape test/leveldown/*-test.js",
@@ -13,7 +13,8 @@
     "test:leveldown:manifest": "tape test/leveldown/manifest-file-size.js",
     "install:leveldb": "test -d leveldb || git clone https://github.com/REI-Network/leveldb",
     "install:napi-macros": "test -d napi-macros || git clone https://github.com/hyperdivision/napi-macros",
-    "install:snappy": "test -d snappy || git clone https://github.com/google/snappy"
+    "install:snappy": "test -d snappy || git clone https://github.com/google/snappy",
+    "install:evmone": "test -d evmone || (git clone https://github.com/ethereum/evmone && cd evmone && git submodule update --init --recursive)"
   },
   "repository": {
     "type": "git",

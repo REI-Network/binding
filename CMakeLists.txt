@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
+add_subdirectory(evmone)
+
 project(rei-binding)
 
 include(CheckCXXCompilerFlag)
@@ -46,3 +48,4 @@ set(HAVE_SNAPPY 1)
 add_subdirectory(snappy)
 add_subdirectory(leveldb)
 add_subdirectory(leveldb-binding)
+add_subdirectory(evm-binding)
