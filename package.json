@@ -1,6 +1,6 @@
 {
   "name": "@rei-network/binding",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "C++ binding for rei network",
   "main": "dist/index.js",
   "scripts": {
