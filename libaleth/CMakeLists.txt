@@ -38,9 +38,6 @@ if(MINIUPNPC)
     find_package(Miniupnpc 1.8.2013 REQUIRED)
 endif()
 
-# Global include path for all libs.
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-
 add_subdirectory(libdevcore)
 add_subdirectory(libdevcrypto)
 add_subdirectory(libethcore)

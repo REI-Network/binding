@@ -49,7 +49,6 @@ set(HAVE_SNAPPY 1)
 add_subdirectory(snappy)
 add_subdirectory(leveldb)
 add_subdirectory(leveldb-binding)
-add_subdirectory(evm-binding)
 
 set(Boost_USE_STATIC_LIBS		ON)
 set(Boost_USE_STATIC_RUNTIME	ON)
@@ -60,4 +59,8 @@ add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 
 add_subdirectory(boost)
 
+# Global include path for all libs.
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/libaleth")
+
 add_subdirectory(libaleth)
+add_subdirectory(evm-binding)
