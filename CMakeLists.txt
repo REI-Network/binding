@@ -59,3 +59,5 @@ add_definitions(-DBOOST_LOCALE_HIDE_AUTO_PTR)
 add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
 
 add_subdirectory(boost)
+
+add_subdirectory(libaleth)
