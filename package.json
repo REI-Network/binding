@@ -1,6 +1,6 @@
 {
   "name": "@rei-network/binding",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "C++ binding for rei network",
   "main": "dist/index.js",
   "scripts": {
@@ -11,10 +11,10 @@
     "test:leveldown": "tape test/leveldown/*-test.js",
     "test:leveldown:gc": "node --expose-gc test/leveldown/gc.js",
     "test:leveldown:manifest": "tape test/leveldown/manifest-file-size.js",
-    "install:leveldb": "test -d leveldb || git clone https://github.com/REI-Network/leveldb",
-    "install:napi-macros": "test -d napi-macros || git clone https://github.com/hyperdivision/napi-macros",
-    "install:snappy": "test -d snappy || git clone https://github.com/google/snappy",
-    "install:evmone": "test -d evmone || (git clone https://github.com/ethereum/evmone && cd evmone && git submodule update --init --recursive)"
+    "install:leveldb": "test -d leveldb || (git clone https://github.com/REI-Network/leveldb && cd leveldb && git reset --hard 1162b57)",
+    "install:napi-macros": "test -d napi-macros || (git clone https://github.com/hyperdivision/napi-macros && cd napi-macros && git reset --hard 6447512)",
+    "install:snappy": "test -d snappy || (git clone https://github.com/google/snappy && cd snappy && git reset --hard 2b63814)",
+    "install:evmone": "test -d evmone || (git clone https://github.com/ethereum/evmone && cd evmone && git reset --hard f4c04ee && git submodule update --init --recursive)"
   },
   "repository": {
     "type": "git",
