@@ -50,3 +50,12 @@ add_subdirectory(snappy)
 add_subdirectory(leveldb)
 add_subdirectory(leveldb-binding)
 add_subdirectory(evm-binding)
+
+set(Boost_USE_STATIC_LIBS		ON)
+set(Boost_USE_STATIC_RUNTIME	ON)
+set(BOOST_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/boost)
+
+add_definitions(-DBOOST_LOCALE_HIDE_AUTO_PTR)
+add_definitions(-DBOOST_COROUTINES_NO_DEPRECATION_WARNING)
+
+add_subdirectory(boost)
