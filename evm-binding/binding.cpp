@@ -1,13 +1,21 @@
+#define NAPI_VERSION 3
+
+#include <napi-macros.h>
+#include <node_api.h>
+
 #include <libethereum/State.h>
 #include <libethereum/Executive.h>
 #include <libethereum/Transaction.h>
 #include <libethereum/ChainParams.h>
 #include <libethereum/LastBlockHashesFace.h>
+
 #include <libethcore/SealEngine.h>
 #include <libethcore/TransactionBase.h>
+
 #include <libdevcore/RLP.h>
 #include <libdevcore/OverlayDB.h>
 #include <libdevcore/MemoryDB.h>
+
 #include <libethashseal/GenesisInfo.h>
 
 using namespace dev;
@@ -91,4 +99,16 @@ void hellow_evmone() {
     executor.initialize(tx);
     executor.execute();
     executor.finalize();
+}
+
+NAPI_METHOD(run)
+{
+    napi_value result;
+    hellow_evmone();
+    return result;
+}
+
+NAPI_INIT()
+{
+    NAPI_EXPORT_FUNCTION(run)
 }

@@ -5,8 +5,8 @@ file(GLOB BINDING_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 # from the above source files
 # named after the project's name
 add_library(evm-binding SHARED ${BINDING_SOURCE_FILES})
-target_include_directories(evm-binding PRIVATE ${CMAKE_JS_INC})
-target_link_libraries(evm-binding PUBLIC ethashseal ethereum ${CMAKE_JS_LIB})
+target_include_directories(evm-binding PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../napi-macros ${CMAKE_JS_INC})
+target_link_libraries(evm-binding PUBLIC devcore devcrypto ethashseal ethcore ethereum evm ${CMAKE_JS_LIB})
 
 # This line will give our library file a .node extension without any "lib" prefix
 set_target_properties(evm-binding PROPERTIES PREFIX "" SUFFIX ".node")
