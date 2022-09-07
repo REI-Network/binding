@@ -8,6 +8,7 @@ using namespace dev;
 //Client configurations
 #include "genesis/mainNetwork.cpp"
 #include "genesis/ropsten.cpp"
+#include "genesis/reiDevNetwork.cpp"
 
 //Test configurations
 #include "genesis/test/berlinTest.cpp"
@@ -86,6 +87,9 @@ std::string const& dev::eth::genesisInfo(Network _n)
         return c_genesisInfoByzantiumToConstantinopleFixAt5Test;
     case Network::TransitionnetTest: return c_genesisInfoTest;
 
+    //REI-Network
+    case Network::REIDevNetwork: return c_genesisInfoREIDevNetwork;
+
     default:
         throw std::invalid_argument("Invalid network value");
     }
@@ -96,6 +100,7 @@ h256 const& dev::eth::genesisStateRoot(Network _n)
     switch (_n)
     {
     case Network::MainNetwork: return c_genesisStateRootMainNetwork;
+    case Network::REIDevNetwork: return c_genesisStateRootREIDevNetwork;
     case Network::Ropsten:
     case Network::MainNetworkTest:
     case Network::TransitionnetTest:

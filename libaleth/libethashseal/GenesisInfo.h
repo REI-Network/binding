@@ -71,6 +71,11 @@ enum class Network
     EIP158ToByzantiumAt5 = 103,
     ByzantiumToConstantinopleFixAt5 = 104,
 
+    // REI-Network
+    REIMainNetwork = 47805,
+    REITestNetwork = 12357,
+    REIDevNetwork = 23579,
+
     Special = 0xff  ///< Something else.
 };
 
