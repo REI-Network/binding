@@ -90,12 +90,21 @@ void hellow_evmone() {
     EnvInfo info(header, lbh, u256(0), params.chainID);
     OverlayDB db(std::make_unique<MemoryDB>());
     State state(0, db, BaseState::Empty);
-    state.addBalance(Address("0x3289621709F5B35D09B4335E129907aC367A0593"), 1000);
+    state.addBalance(Address("0x3289621709F5B35D09B4335E129907aC367A0593"), 100000);
     Executive executor(state, info, *engine);
     auto tx = createMockTransaction();
     executor.initialize(tx);
     executor.execute();
     executor.finalize();
+}
+
+NAPI_METHOD(init)
+{
+    napi_value result;
+    // register seal engines
+    NoProof::init();
+    NoReward::init();
+    return result;
 }
 
 NAPI_METHOD(run)
@@ -113,5 +122,6 @@ NAPI_METHOD(run)
 
 NAPI_INIT()
 {
+    NAPI_EXPORT_FUNCTION(init)
     NAPI_EXPORT_FUNCTION(run)
 }
