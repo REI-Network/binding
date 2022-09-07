@@ -14,7 +14,7 @@
 
 #include <libdevcore/RLP.h>
 #include <libdevcore/OverlayDB.h>
-#include <libdevcore/MemoryDB.h>
+#include <libdevcore/DBFactory.h>
 
 #include <libethashseal/GenesisInfo.h>
 
@@ -88,7 +88,7 @@ void hellow_evmone() {
     MockLastBlockHashesFace lbh;
     auto header = createMockBlockHeader();
     EnvInfo info(header, lbh, u256(0), params.chainID);
-    OverlayDB db(std::make_unique<MemoryDB>());
+    OverlayDB db(DBFactory::create(DatabaseKind::MemoryDB));
     State state(0, db, BaseState::Empty);
     state.addBalance(Address("0x3289621709F5B35D09B4335E129907aC367A0593"), 100000);
     Executive executor(state, info, *engine);
