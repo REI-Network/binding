@@ -34,12 +34,9 @@ include(ProjectLibFF)
 
 find_package(Threads)
 
-if(MINIUPNPC)
-    find_package(Miniupnpc 1.8.2013 REQUIRED)
-endif()
-
 add_subdirectory(libdevcore)
 add_subdirectory(libdevcrypto)
 add_subdirectory(libethcore)
 add_subdirectory(libevm)
 add_subdirectory(libethereum)
+add_subdirectory(libethashseal)
