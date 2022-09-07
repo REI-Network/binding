@@ -39,9 +39,8 @@ public:
 
 BlockHeader createMockBlockHeader() {
     RLPStream header;
-    RLPStream transactions;
-    RLPStream uncles;
 
+    header.appendList(13);
     // parent hash
     header << h256(0);
     // sha3 uncles
@@ -51,9 +50,9 @@ BlockHeader createMockBlockHeader() {
     // state root
     header << h256(0);
     // transactions root
-    header << RLPEmptyList;
+    header << fromHex("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
     // receipts root
-    header << RLPEmptyList;
+    header << fromHex("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
     // log bloom
     header << h2048(0);
     // difficulty
@@ -69,9 +68,7 @@ BlockHeader createMockBlockHeader() {
     // extra data
     header << h256(0);
 
-    RLPStream block;
-    block.appendList(header).appendList(transactions).appendList(uncles);
-    return BlockHeader{block.out()};
+    return BlockHeader{header.out(), BlockDataType::HeaderData};
 }
 
 Transaction createMockTransaction() {
@@ -104,7 +101,13 @@ void hellow_evmone() {
 NAPI_METHOD(run)
 {
     napi_value result;
-    hellow_evmone();
+    try {
+        hellow_evmone();
+    } catch(const std::exception& err) {
+        std::cout << "error: " << err.what() << std::endl;
+    } catch(...) {
+        std::cout << "error: unknown" << std::endl;
+    }
     return result;
 }
 
