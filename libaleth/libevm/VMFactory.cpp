@@ -6,16 +6,19 @@
 #include "EVMC.h"
 #include "LegacyVM.h"
 
-#include <libaleth-interpreter/interpreter.h>
+// #include <libaleth-interpreter/interpreter.h>
+#include <evmone/evmone.h>
 
 #include <evmc/loader.h>
 
-namespace po = boost::program_options;
+// namespace po = boost::program_options;
 
 namespace dev
 {
 namespace eth
 {
+
+/*
 namespace
 {
 auto g_kind = VMKind::Legacy;
@@ -154,11 +157,12 @@ po::options_description vmProgramOptions(unsigned _lineLength)
 
     return opts;
 }
+*/
 
 
 VMPtr VMFactory::create()
 {
-    return create(g_kind);
+    return create(VMKind::One);
 }
 
 VMPtr VMFactory::create(VMKind _kind)
@@ -169,11 +173,16 @@ VMPtr VMFactory::create(VMKind _kind)
     switch (_kind)
     {
     case VMKind::Interpreter:
-        return {new EVMC{evmc_create_aleth_interpreter(), s_evmcOptions}, default_delete};
+        // return {new EVMC{evmc_create_aleth_interpreter(), s_evmcOptions}, default_delete};
     case VMKind::DLL:
-        assert(g_evmcDll != nullptr);
+        // assert(g_evmcDll != nullptr);
         // Return "fake" owning pointer to global EVMC DLL VM.
-        return {g_evmcDll.get(), null_delete};
+        // return {g_evmcDll.get(), null_delete};
+        BOOST_THROW_EXCEPTION(std::system_error(std::make_error_code(std::errc::invalid_argument),
+            "unsupported vm kind"));
+    case VMKind::One:
+        // TODO: set options
+        return {new EVMC{evmc_create_evmone(), {}}, default_delete};
     case VMKind::Legacy:
     default:
         return {new LegacyVM, default_delete};
