@@ -100,16 +100,14 @@ void hellow_evmone() {
 
 NAPI_METHOD(init)
 {
-    napi_value result;
     // register seal engines
     NoProof::init();
     NoReward::init();
-    return result;
+    return 0;
 }
 
 NAPI_METHOD(run)
 {
-    napi_value result;
     try {
         hellow_evmone();
     } catch(const std::exception& err) {
@@ -117,7 +115,7 @@ NAPI_METHOD(run)
     } catch(...) {
         std::cout << "error: unknown" << std::endl;
     }
-    return result;
+    return 0;
 }
 
 NAPI_INIT()
