@@ -87,15 +87,12 @@ void hellow_evmone() {
     std::unique_ptr<SealEngineFace> engine(params.createSealEngine());
     MockLastBlockHashesFace lbh;
     auto header = createMockBlockHeader();
+    auto tx = createMockTransaction();
     EnvInfo info(header, lbh, u256(0), params.chainID);
     OverlayDB db(DBFactory::create(DatabaseKind::MemoryDB));
     State state(0, db, BaseState::Empty);
     state.addBalance(Address("0x3289621709F5B35D09B4335E129907aC367A0593"), 100000);
-    Executive executor(state, info, *engine);
-    auto tx = createMockTransaction();
-    executor.initialize(tx);
-    executor.execute();
-    executor.finalize();
+    auto [result, receipt] = state.execute(info, *engine, tx, Permanence::Committed);
 }
 
 NAPI_METHOD(init)
