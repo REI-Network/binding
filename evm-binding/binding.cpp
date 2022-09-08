@@ -1,17 +1,17 @@
 #include <napi.h>
 
-#include <libethereum/State.h>
-#include <libethereum/Executive.h>
-#include <libethereum/Transaction.h>
 #include <libethereum/ChainParams.h>
+#include <libethereum/Executive.h>
 #include <libethereum/LastBlockHashesFace.h>
+#include <libethereum/State.h>
+#include <libethereum/Transaction.h>
 
 #include <libethcore/SealEngine.h>
 #include <libethcore/TransactionBase.h>
 
-#include <libdevcore/RLP.h>
-#include <libdevcore/OverlayDB.h>
 #include <libdevcore/DBFactory.h>
+#include <libdevcore/OverlayDB.h>
+#include <libdevcore/RLP.h>
 
 #include <libethashseal/GenesisInfo.h>
 
@@ -19,10 +19,12 @@ using namespace dev;
 using namespace dev::db;
 using namespace dev::eth;
 
+using Buffer = Napi::Buffer<unsigned char>;
+
 class MockLastBlockHashesFace : public LastBlockHashesFace
 {
-public:
-    virtual h256s precedingHashes(h256 const& _mostRecentHash) const final
+  public:
+    virtual h256s precedingHashes(h256 const &_mostRecentHash) const final
     {
         // TODO: return empty...
         return h256s{256, h256()};
@@ -34,68 +36,7 @@ public:
     }
 };
 
-BlockHeader createMockBlockHeader()
-{
-    RLPStream header;
-
-    header.appendList(13);
-    // parent hash
-    header << h256(0);
-    // sha3 uncles
-    header << h256(0);
-    // author
-    header << h160(0);
-    // state root
-    header << h256(0);
-    // transactions root
-    header << fromHex("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
-    // receipts root
-    header << fromHex("0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347");
-    // log bloom
-    header << h2048(0);
-    // difficulty
-    header << 0;
-    // number
-    header << 0;
-    // gas limit
-    header << 0x1312d00;
-    // gas used
-    header << 0;
-    // timestamp
-    header << 0;
-    // extra data
-    header << h256(0);
-
-    return BlockHeader{header.out(), BlockDataType::HeaderData};
-}
-
-Transaction createMockTransaction()
-{
-    TransactionSkeleton tx;
-    tx.from = Address("0x3289621709F5B35D09B4335E129907aC367A0593");
-    tx.to = Address("0xD1E52F6EACBb95f5F8512Ff129CbD6360E549B0B");
-    tx.value = 1;
-    tx.nonce = 0;
-    tx.gas = 21000;
-    tx.gasPrice = 1;
-    return Transaction{tx, Secret("0xd8ca4883bbf62202904e402750d593a297b5640dea80b6d5b239c5a9902662c0")};
-}
-
-void hellow_evmone()
-{
-    ChainParams params(genesisInfo(eth::Network::REIDevNetwork), genesisStateRoot(eth::Network::REIDevNetwork));
-    std::unique_ptr<SealEngineFace> engine(params.createSealEngine());
-    MockLastBlockHashesFace lbh;
-    auto header = createMockBlockHeader();
-    auto tx = createMockTransaction();
-    EnvInfo info(header, lbh, u256(0), params.chainID);
-    OverlayDB db(DBFactory::create(DatabaseKind::MemoryDB));
-    State state(0, db, BaseState::Empty);
-    state.addBalance(Address("0x3289621709F5B35D09B4335E129907aC367A0593"), 100000);
-    auto [result, receipt] = state.execute(info, *engine, tx, Permanence::Committed);
-}
-
-Napi::Value init(const Napi::CallbackInfo& info)
+Napi::Value init(const Napi::CallbackInfo &info)
 {
     // register seal engines
     NoProof::init();
@@ -103,22 +44,76 @@ Napi::Value init(const Napi::CallbackInfo& info)
     return info.Env().Undefined();
 }
 
-Napi::Value run(const Napi::CallbackInfo& info)
+/**
+ * Run transaction
+ * @param stateRoot
+ * @param headerRLP
+ * @param txRLP
+ * @param gasUsed - Hex encoded gas used
+ * @return Napi::Value
+ */
+Napi::Value runTx(const Napi::CallbackInfo &info)
 {
-    try {
-        hellow_evmone();
-    } catch(const std::exception& err) {
-        std::cout << "error: " << err.what() << std::endl;
-    } catch(...) {
-        std::cout << "error: unknown" << std::endl;
+    Napi::Env env = info.Env();
+
+    if (info.Length() != 4)
+    {
+        Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+        return env.Undefined();
     }
-    return info.Env().Undefined();
+
+    if (!info[0].IsBuffer() || !info[1].IsBuffer() || !info[2].IsBuffer() || !info[3].IsString())
+    {
+        Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    try
+    {
+        // parse input params
+        auto stateRootBuf = info[0].As<Buffer>();
+        h256 stateRoot(bytesConstRef(stateRootBuf.Data(), stateRootBuf.Length()));
+        auto headerBuf = info[1].As<Buffer>();
+        BlockHeader header(bytesConstRef(headerBuf.Data(), headerBuf.Length()), BlockDataType::HeaderData);
+        auto txBuf = info[2].As<Buffer>();
+        Transaction tx(bytesConstRef(txBuf.Data(), txBuf.Length()), CheckTransaction::Everything);
+        auto gasUsed = fromHex(info[3].As<Napi::String>());
+
+        // load chain params
+        ChainParams params(genesisInfo(eth::Network::REIDevNetwork), genesisStateRoot(eth::Network::REIDevNetwork));
+        // create seal engine instance
+        std::unique_ptr<SealEngineFace> engine(params.createSealEngine());
+        // TODO: create lbh object
+        MockLastBlockHashesFace lbh;
+        // create env info object
+        EnvInfo envInfo(header, lbh, u256(gasUsed), params.chainID);
+        // TODO: get leveldb instance
+        OverlayDB db(DBFactory::create(DatabaseKind::MemoryDB));
+        // create state manager object
+        State state(0, db, BaseState::Empty);
+        state.setRoot(stateRoot);
+        // execute transaction
+        auto [result, receipt] = state.execute(envInfo, *engine, tx, Permanence::Committed);
+
+        // TODO: return receipt
+        return env.Undefined();
+    }
+    catch (const std::exception &err)
+    {
+        Napi::Error::New(env, err.what()).ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+    catch (...)
+    {
+        Napi::Error::New(env, "Unknown error").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     exports.Set(Napi::String::New(env, "init"), Napi::Function::New(env, init));
-    exports.Set(Napi::String::New(env, "run"), Napi::Function::New(env, run));
+    exports.Set(Napi::String::New(env, "runTx"), Napi::Function::New(env, runTx));
     return exports;
 }
 
