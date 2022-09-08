@@ -5,8 +5,20 @@ file(GLOB BINDING_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 # from the above source files
 # named after the project's name
 add_library(evm-binding SHARED ${BINDING_SOURCE_FILES})
-target_include_directories(evm-binding PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../napi-macros ${CMAKE_JS_INC})
-target_link_libraries(evm-binding PUBLIC devcore devcrypto ethashseal ethcore ethereum evm ${CMAKE_JS_LIB})
 
 # This line will give our library file a .node extension without any "lib" prefix
 set_target_properties(evm-binding PROPERTIES PREFIX "" SUFFIX ".node")
+
+# Include Node-API wrappers
+execute_process(COMMAND node -p "require('node-addon-api').include"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE NODE_ADDON_API_DIR
+        )
+string(REGEX REPLACE "[\r\n\"]" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+target_include_directories(evm-binding PRIVATE ${CMAKE_JS_INC} ${NODE_ADDON_API_DIR})
+
+# Link libraries
+target_link_libraries(evm-binding PUBLIC devcore devcrypto ethashseal ethcore ethereum evm ${CMAKE_JS_LIB})
+
+# define NAPI_VERSION
+add_definitions(-DNAPI_VERSION=3)

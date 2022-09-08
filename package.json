@@ -33,7 +33,8 @@
   "dependencies": {
     "abstract-leveldown": "^7.2.0",
     "bindings": "^1.5.0",
-    "cmake-js": "^6.3.2"
+    "cmake-js": "^6.3.2",
+    "node-addon-api": "^5.0.0"
   },
   "devDependencies": {
     "async-each": "^1.0.3",

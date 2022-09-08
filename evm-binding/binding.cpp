@@ -1,7 +1,4 @@
-#define NAPI_VERSION 3
-
-#include <napi-macros.h>
-#include <node_api.h>
+#include <napi.h>
 
 #include <libethereum/State.h>
 #include <libethereum/Executive.h>
@@ -37,7 +34,8 @@ public:
     }
 };
 
-BlockHeader createMockBlockHeader() {
+BlockHeader createMockBlockHeader()
+{
     RLPStream header;
 
     header.appendList(13);
@@ -71,7 +69,8 @@ BlockHeader createMockBlockHeader() {
     return BlockHeader{header.out(), BlockDataType::HeaderData};
 }
 
-Transaction createMockTransaction() {
+Transaction createMockTransaction()
+{
     TransactionSkeleton tx;
     tx.from = Address("0x3289621709F5B35D09B4335E129907aC367A0593");
     tx.to = Address("0xD1E52F6EACBb95f5F8512Ff129CbD6360E549B0B");
@@ -82,7 +81,8 @@ Transaction createMockTransaction() {
     return Transaction{tx, Secret("0xd8ca4883bbf62202904e402750d593a297b5640dea80b6d5b239c5a9902662c0")};
 }
 
-void hellow_evmone() {
+void hellow_evmone()
+{
     ChainParams params(genesisInfo(eth::Network::REIDevNetwork), genesisStateRoot(eth::Network::REIDevNetwork));
     std::unique_ptr<SealEngineFace> engine(params.createSealEngine());
     MockLastBlockHashesFace lbh;
@@ -95,15 +95,15 @@ void hellow_evmone() {
     auto [result, receipt] = state.execute(info, *engine, tx, Permanence::Committed);
 }
 
-NAPI_METHOD(init)
+Napi::Value init(const Napi::CallbackInfo& info)
 {
     // register seal engines
     NoProof::init();
     NoReward::init();
-    return 0;
+    return info.Env().Undefined();
 }
 
-NAPI_METHOD(run)
+Napi::Value run(const Napi::CallbackInfo& info)
 {
     try {
         hellow_evmone();
@@ -112,11 +112,14 @@ NAPI_METHOD(run)
     } catch(...) {
         std::cout << "error: unknown" << std::endl;
     }
-    return 0;
+    return info.Env().Undefined();
 }
 
-NAPI_INIT()
+Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-    NAPI_EXPORT_FUNCTION(init)
-    NAPI_EXPORT_FUNCTION(run)
+    exports.Set(Napi::String::New(env, "init"), Napi::Function::New(env, init));
+    exports.Set(Napi::String::New(env, "run"), Napi::Function::New(env, run));
+    return exports;
 }
+
+NODE_API_MODULE(binding, Init)
