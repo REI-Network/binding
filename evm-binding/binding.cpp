@@ -77,7 +77,7 @@ Napi::Value runTx(const Napi::CallbackInfo &info)
         BlockHeader header(bytesConstRef(headerBuf.Data(), headerBuf.Length()), BlockDataType::HeaderData);
         auto txBuf = info[2].As<Buffer>();
         Transaction tx(bytesConstRef(txBuf.Data(), txBuf.Length()), CheckTransaction::Everything);
-        auto gasUsed = fromHex(info[3].As<Napi::String>());
+        u256 gasUsed(fromHex(info[3].As<Napi::String>()));
 
         // load chain params
         ChainParams params(genesisInfo(eth::Network::REIDevNetwork), genesisStateRoot(eth::Network::REIDevNetwork));
@@ -86,11 +86,12 @@ Napi::Value runTx(const Napi::CallbackInfo &info)
         // TODO: create lbh object
         MockLastBlockHashesFace lbh;
         // create env info object
-        EnvInfo envInfo(header, lbh, u256(gasUsed), params.chainID);
+        EnvInfo envInfo(header, lbh, gasUsed, params.chainID);
         // TODO: get leveldb instance
         OverlayDB db(DBFactory::create(DatabaseKind::MemoryDB));
         // create state manager object
-        State state(0, db, BaseState::Empty);
+        // TODO: BaseState
+        State state(0, db, BaseState::PreExisting);
         state.setRoot(stateRoot);
         // execute transaction
         auto [result, receipt] = state.execute(envInfo, *engine, tx, Permanence::Committed);
