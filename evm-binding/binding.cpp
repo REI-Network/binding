@@ -109,7 +109,7 @@ Napi::Value genesis(const Napi::CallbackInfo &info)
         state.commit(State::CommitBehaviour::KeepEmptyAccounts);
         // commit data to db
         state.db().commit();
-        return Napi::String::From(env, "0x" + toHex(state.rootHash()));
+        return Napi::String::New(env, "0x" + toHex(state.rootHash()));
     }
     catch (const std::exception &err)
     {
@@ -131,7 +131,7 @@ Napi::Value genesis(const Napi::CallbackInfo &info)
  * @param headerRLP
  * @param txRLP
  * @param gasUsed - Hex encoded gas used
- * @return Napi::Value
+ * @return New state root hash
  */
 Napi::Value runTx(const Napi::CallbackInfo &info)
 {
@@ -169,7 +169,6 @@ Napi::Value runTx(const Napi::CallbackInfo &info)
         // create env info object
         EnvInfo envInfo(header, lbh, gasUsed, params.chainID);
         // TODO: get leveldb instance
-        // TODO: BaseState
         // create state manager object
         State state(0, *g_mockDB, BaseState::PreExisting);
         state.setRoot(stateRoot);
@@ -179,7 +178,7 @@ Napi::Value runTx(const Napi::CallbackInfo &info)
         state.db().commit();
 
         // TODO: return receipt
-        return env.Undefined();
+        return Napi::String::New(env, "0x" + toHex(state.rootHash()));
     }
     catch (const std::exception &err)
     {

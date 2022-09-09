@@ -53,23 +53,22 @@ try {
       .concat(new Array(precompiles.length).fill("0x00"))
   );
   const { genesis, dump } = require("./dump.json");
-  if (genesis.stateRoot.toLowerCase() !== stateRoot.toLowerCase()) {
+  if (genesis.stateRoot.toLocaleLowerCase() !== stateRoot.toLocaleLowerCase()) {
     throw new Error("genesis state root mismatch!");
   }
   for (let i = 0; i < dump.length; i++) {
     const { blockHeader, tx } = dump[i];
     console.log("start run tx at index:", i);
-    evm.runTx(
+    stateRoot = evm.runTx(
       toBuffer(stateRoot),
       toBuffer(blockHeader.raw),
       toBuffer(tx.raw),
       "0x00"
     );
-    stateRoot = blockHeader.stateRoot;
     console.log("run tx succeed at index:", i);
-    break;
   }
-  evm.destroy();
 } catch (err) {
   console.log("error:", err);
+} finally {
+  evm.destroy();
 }
