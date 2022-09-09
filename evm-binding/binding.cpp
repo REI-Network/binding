@@ -21,7 +21,7 @@ using namespace dev::eth;
 
 using Buffer = Napi::Buffer<unsigned char>;
 
-OverlayDB g_mockDB = OverlayDB(DBFactory::create(DatabaseKind::MemoryDB));
+auto g_mockDB = std::make_shared<OverlayDB>(DBFactory::create(DatabaseKind::MemoryDB));
 
 class MockLastBlockHashesFace : public LastBlockHashesFace
 {
@@ -43,6 +43,13 @@ Napi::Value init(const Napi::CallbackInfo &info)
     // register seal engines
     NoProof::init();
     NoReward::init();
+    return info.Env().Undefined();
+}
+
+Napi::Value destroy(const Napi::CallbackInfo &info)
+{
+    // destroy database object
+    g_mockDB.reset();
     return info.Env().Undefined();
 }
 
@@ -91,7 +98,7 @@ Napi::Value genesis(const Napi::CallbackInfo &info)
         genesisInfo.push_back({Address(address.As<Napi::String>()), u256(fromHex(balance.As<Napi::String>()))});
     }
 
-    State state(0, g_mockDB, BaseState::Empty);
+    State state(0, *g_mockDB, BaseState::Empty);
     auto sp = state.savepoint();
     try
     {
@@ -164,7 +171,7 @@ Napi::Value runTx(const Napi::CallbackInfo &info)
         // TODO: get leveldb instance
         // TODO: BaseState
         // create state manager object
-        State state(0, g_mockDB, BaseState::PreExisting);
+        State state(0, *g_mockDB, BaseState::PreExisting);
         state.setRoot(stateRoot);
         // execute transaction
         auto [result, receipt] = state.execute(envInfo, *engine, tx, Permanence::Committed);
@@ -189,6 +196,7 @@ Napi::Value runTx(const Napi::CallbackInfo &info)
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     exports.Set(Napi::String::New(env, "init"), Napi::Function::New(env, init));
+    exports.Set(Napi::String::New(env, "destroy"), Napi::Function::New(env, destroy));
     exports.Set(Napi::String::New(env, "runTx"), Napi::Function::New(env, runTx));
     exports.Set(Napi::String::New(env, "genesis"), Napi::Function::New(env, genesis));
     return exports;

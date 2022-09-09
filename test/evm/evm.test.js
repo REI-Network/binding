@@ -67,7 +67,9 @@ try {
     );
     stateRoot = blockHeader.stateRoot;
     console.log("run tx succeed at index:", i);
+    break;
   }
+  evm.destroy();
 } catch (err) {
   console.log("error:", err);
 }
