@@ -79,7 +79,7 @@ function toBuffer(str) {
     for (let i = 0; i < dump.length; i++) {
       const { blockHeader, tx } = dump[i];
       console.log("start run tx at index:", i);
-      stateRoot = evm.runTx(
+      const newStateRoot = evm.runTx(
         toBuffer(stateRoot),
         toBuffer(blockHeader.raw),
         toBuffer(tx.raw),
@@ -87,6 +87,7 @@ function toBuffer(str) {
         () => []
       );
       console.log("run tx succeed at index:", i);
+      stateRoot = newStateRoot;
     }
   } catch (err) {
     console.log("error:", err);

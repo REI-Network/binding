@@ -40,16 +40,14 @@ Napi::Value toNapiValue(Napi::Env env, const bytes &t)
     return Napi::String::New(env, "0x" + toHex(t));
 }
 
-template <class R, class T> R fromNapiValue(const T &t);
-
-LastBlockHashesLoader fromNapiValue(const Napi::Function &func)
+LastBlockHashesLoader fromNapiValueToLoader(const Napi::Function &func)
 {
     return [&func]() {
         auto result = func.Call({});
 
         if (!result.IsArray())
         {
-            Napi::TypeError::New(func.Env(), "Wrong number of arguments").ThrowAsJavaScriptException();
+            Napi::TypeError::New(func.Env(), "Wrong arguments").ThrowAsJavaScriptException();
             return h256s{};
         }
 
@@ -62,7 +60,7 @@ LastBlockHashesLoader fromNapiValue(const Napi::Function &func)
 
             if (!value.IsBuffer())
             {
-                Napi::TypeError::New(func.Env(), "Wrong number of arguments").ThrowAsJavaScriptException();
+                Napi::TypeError::New(func.Env(), "Wrong arguments").ThrowAsJavaScriptException();
                 return h256s{};
             }
 
@@ -73,6 +71,93 @@ LastBlockHashesLoader fromNapiValue(const Napi::Function &func)
 
         return hashes;
     };
+}
+
+u256 fromNapiValueToU256(const Napi::Value &value)
+{
+    if (value.IsString())
+    {
+        return u256{fromHex(value.As<Napi::String>())};
+    }
+    else if (value.IsNumber())
+    {
+        return u256(value.As<Napi::Number>().Uint32Value());
+    }
+    else if (value.IsUndefined() || value.IsNull())
+    {
+        return 0;
+    }
+    else
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return 0;
+    }
+}
+
+bytes fromNapiValueToBytes(const Napi::Value &value)
+{
+    if (!value.IsString())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return {};
+    }
+
+    return fromHex(value.As<Napi::String>());
+}
+
+h256 fromNapiValueToH256(const Napi::Value &value)
+{
+    if (value.IsString())
+    {
+        return h256(fromHex(value.As<Napi::String>()));
+    }
+    else if (value.IsBuffer())
+    {
+        auto buffer = value.As<Buffer>();
+        return h256(bytesConstRef(buffer.Data(), buffer.Length()));
+    }
+    else
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return h256{};
+    }
+}
+
+Address fromNapiValueToAddress(const Napi::Value &value)
+{
+    if (!value.IsString())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return {};
+    }
+
+    return Address(value.As<Napi::String>());
+}
+
+Transaction fromNapiValueToTx(const Napi::Value &input)
+{
+    if (!input.IsObject())
+    {
+        Napi::TypeError::New(input.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return {};
+    }
+
+    auto obj = input.As<Napi::Object>();
+    auto value = fromNapiValueToU256(obj.Get("value"));
+    auto gasPrice = fromNapiValueToU256(obj.Get("gasPrice"));
+    auto gas = fromNapiValueToU256(obj.Get("gas"));
+    auto data = fromNapiValueToBytes(obj.Get("data"));
+    auto nonce = fromNapiValueToU256(obj.Get("nonce"));
+    auto destValue = obj.Get("dest");
+    if (!destValue.IsUndefined() && !destValue.IsNull())
+    {
+        auto dest = fromNapiValueToAddress(destValue);
+        return Transaction(value, gasPrice, gas, dest, data, nonce);
+    }
+    else
+    {
+        return Transaction(value, gasPrice, gas, data, nonce);
+    }
 }
 
 class LastBlockHashes : public LastBlockHashesFace
@@ -419,15 +504,13 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
             Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
         }
 
-        if (!info[0].IsBuffer() || !info[1].IsBuffer() || !info[2].IsBuffer() || !info[3].IsString() ||
-            !info[4].IsFunction())
+        if (!info[1].IsBuffer() || !info[2].IsBuffer() || !info[4].IsFunction())
         {
             Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
         }
 
         // parse input params
-        auto stateRootBuf = info[0].As<Buffer>();
-        h256 stateRoot(bytesConstRef(stateRootBuf.Data(), stateRootBuf.Length()));
+        auto stateRoot = fromNapiValueToH256(info[0]);
 
         auto headerBuf = info[1].As<Buffer>();
         BlockHeader header(bytesConstRef(headerBuf.Data(), headerBuf.Length()), BlockDataType::HeaderData);
@@ -435,9 +518,9 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         auto txBuf = info[2].As<Buffer>();
         Transaction tx(bytesConstRef(txBuf.Data(), txBuf.Length()), CheckTransaction::Everything);
 
-        u256 gasUsed(fromHex(info[3].As<Napi::String>()));
+        auto gasUsed = fromNapiValueToU256(info[3]);
 
-        auto loader = fromNapiValue(info[4].As<Napi::Function>());
+        auto loader = fromNapiValueToLoader(info[4].As<Napi::Function>());
 
         return std::make_tuple(stateRoot, header, tx, gasUsed, loader);
     }
