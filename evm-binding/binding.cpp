@@ -96,20 +96,37 @@ class LastBlockHashes : public LastBlockHashesFace
     LastBlockHashesLoader m_loader;
 };
 
+/**
+ * C++ implementation of EVM binding.
+ */
 class EVMBinding
 {
   public:
+    /**
+     * Construct a new EVMBinding object.
+     * @param db - Level db object
+     * @param network - Network id
+     */
     EVMBinding(void *db, eth::Network network)
         : m_db(DBFactory::create(db)), m_params(genesisInfo(network), genesisStateRoot(network)),
           m_engine(m_params.createSealEngine())
     {
     }
 
+    /**
+     * Get chain id.
+     * @return Chain id
+     */
     int chainID()
     {
         return m_params.chainID;
     }
 
+    /**
+     * Initialize genesis state.
+     * @param info - Genesis information
+     * @return State root hash 
+     */
     h256 genesis(const GenesisInfo &info)
     {
         if (m_state.get() != nullptr)
@@ -122,12 +139,30 @@ class EVMBinding
         return m_state->rootHash();
     }
 
+    /**
+     * Execute transaction.
+     * @param stateRoot - Previous state root hash
+     * @param header - Block header
+     * @param tx - Transaction
+     * @param gasUsed - Gas used
+     * @param loader - A function used to load block hash
+     * @return New state root, execution result and transaction receipt 
+     */
     auto runTx(const h256 &stateRoot, const BlockHeader &header, const Transaction &tx, const u256 &gasUsed,
                LastBlockHashes loader)
     {
         return run(stateRoot, header, tx, gasUsed, loader, Permanence::Committed);
     }
 
+    /** 
+     * Execute call.
+     * @param stateRoot - Previous state root hash
+     * @param header - Block header
+     * @param tx - Transaction
+     * @param gasUsed - Gas used
+     * @param loader - A function used to load block hash
+     * @return Contract output
+     */
     auto runCall(const h256 &stateRoot, const BlockHeader &header, const Transaction &tx, const u256 &gasUsed,
                  LastBlockHashes loader)
     {
@@ -136,6 +171,10 @@ class EVMBinding
     }
 
   private:
+    /**
+     * Create a state if it doesn't exsit.
+     * @param info - Genesis info
+     */
     void createStateIfNotExsits(const GenesisInfo *info = nullptr)
     {
         if (m_state.get() != nullptr)
@@ -161,6 +200,16 @@ class EVMBinding
         }
     }
 
+    /**
+     * Run vm.
+     * @param stateRoot - Previous state root hash
+     * @param header - Block header
+     * @param tx - Transaction
+     * @param gasUsed - Gas used
+     * @param loader - A function used to load block hash
+     * @param permanence - Whether to persist the database
+     * @return New state root, execution result and transaction receipt
+     */
     std::tuple<h256, ExecutionResult, TransactionReceipt> run(const h256 &stateRoot, const BlockHeader &header,
                                                               const Transaction &tx, const u256 &gasUsed,
                                                               LastBlockHashes loader, Permanence permanence)
@@ -185,6 +234,9 @@ class EVMBinding
     std::shared_ptr<State> m_state;
 };
 
+/**
+ * JS wrapper for EVM binding.
+ */
 class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
 {
   public:
@@ -207,6 +259,12 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         return exports;
     }
 
+    /**
+     * Construct a new JSEVMBinding object.
+     * @param info - Napi callback info
+     * @param info_0 - External level db object
+     * @param info_1 - Network id
+     */
     JSEVMBinding(const Napi::CallbackInfo &info) : Napi::ObjectWrap<JSEVMBinding>(info)
     {
         Napi::Env env = info.Env();
@@ -227,6 +285,11 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
                                                  eth::Network(info[1].As<Napi::Number>().Uint32Value()));
     }
 
+    /**
+     * Get chain id.
+     * @param info - Napi callback info
+     * @return Chain id
+     */
     Napi::Value chainID(const Napi::CallbackInfo &info)
     {
         checkBinding(info);
@@ -234,6 +297,13 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         return Napi::Number::New(info.Env(), m_binding->chainID());
     }
 
+    /**
+     * Initialize genesis state.
+     * @param info - Napi callback info
+     * @param info_0 - An array containing all addresses
+     * @param info_1 - An array containing the balances of all addresses
+     * @return New state root hash
+     */
     Napi::Value genesis(const Napi::CallbackInfo &info)
     {
         checkBinding(info);
@@ -278,6 +348,16 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         return toNapiValue(env, m_binding->genesis(genesisInfo));
     }
 
+    /**
+     * Execute transaction.
+     * @param info - Napi callback info
+     * @param info_0 - Previous state root hash
+     * @param info_1 - RLP encoded block header
+     * @param info_2 - RLP encoded transaction
+     * @param info_3 - Gas used
+     * @param info_4 - A function used to load block hash
+     * @return New state root hash
+     */
     Napi::Value runTx(const Napi::CallbackInfo &info)
     {
         // parse input params
@@ -290,6 +370,16 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         return toNapiValue(info.Env(), newStateRoot);
     }
 
+     /** 
+     * Execute call.
+     * @param info - Napi callback info
+     * @param info_0 - Previous state root hash
+     * @param info_1 - RLP encoded block header
+     * @param info_2 - RLP encoded transaction
+     * @param info_3 - Gas used
+     * @param info_4 - A function used to load block hash
+     * @return Contract output
+     */
     Napi::Value runCall(const Napi::CallbackInfo &info)
     {
         // parse input params
@@ -302,6 +392,10 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
     }
 
   private:
+    /**
+     * Make sure the binding object exists
+     * @param info - Napi callback info
+     */
     void checkBinding(const Napi::CallbackInfo &info)
     {
         if (m_binding.get() == nullptr)
@@ -310,6 +404,11 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         }
     }
 
+    /**
+     * Parse napi value for vm. 
+     * @param info - Napi callback info
+     * @return Input params
+     */
     std::tuple<h256, BlockHeader, Transaction, u256, LastBlockHashesLoader> parseRunParams(
         const Napi::CallbackInfo &info)
     {
@@ -346,9 +445,12 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
     std::shared_ptr<EVMBinding> m_binding;
 };
 
+/**
+ * Register all seal engines 
+ * @param info - Napi callback info
+ */
 Napi::Value init(const Napi::CallbackInfo &info)
 {
-    // register seal engines
     NoProof::init();
     NoReward::init();
     return info.Env().Undefined();
