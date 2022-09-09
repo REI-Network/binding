@@ -42,5 +42,34 @@ private:
     leveldb::WriteOptions const m_writeOptions;
 };
 
+class ExternalLevelDB : public DatabaseFace
+{
+public:
+    static leveldb::ReadOptions defaultReadOptions();
+    static leveldb::WriteOptions defaultWriteOptions();
+    static leveldb::Options defaultDBOptions();
+
+    explicit ExternalLevelDB(void* db,
+        leveldb::ReadOptions _readOptions = defaultReadOptions(),
+        leveldb::WriteOptions _writeOptions = defaultWriteOptions(),
+        leveldb::Options _dbOptions = defaultDBOptions());
+    ~ExternalLevelDB() { m_db = nullptr; }
+
+    std::string lookup(Slice _key) const override;
+    bool exists(Slice _key) const override;
+    void insert(Slice _key, Slice _value) override;
+    void kill(Slice _key) override;
+
+    std::unique_ptr<WriteBatchFace> createWriteBatch() const override;
+    void commit(std::unique_ptr<WriteBatchFace> _batch) override;
+
+    void forEach(std::function<bool(Slice, Slice)> _f) const override;
+
+private:
+    leveldb::DB* m_db;
+    leveldb::ReadOptions const m_readOptions;
+    leveldb::WriteOptions const m_writeOptions;
+};
+
 }  // namespace db
 }  // namespace dev

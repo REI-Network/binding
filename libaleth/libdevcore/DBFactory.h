@@ -18,7 +18,8 @@ enum class DatabaseKind
 {
     LevelDB,
     RocksDB,
-    MemoryDB
+    MemoryDB,
+    ExternalLevelDB
 };
 
 /// Provide a set of program options related to databases
@@ -41,10 +42,11 @@ public:
     ~DBFactory() = delete;
 
     static std::unique_ptr<DatabaseFace> create();
+    static std::unique_ptr<DatabaseFace> create(void* db);
     static std::unique_ptr<DatabaseFace> create(boost::filesystem::path const& _path);
     static std::unique_ptr<DatabaseFace> create(DatabaseKind _kind);
     static std::unique_ptr<DatabaseFace> create(
-        DatabaseKind _kind, boost::filesystem::path const& _path);
+        DatabaseKind _kind, boost::filesystem::path const& _path, void* db = nullptr);
 
 private:
 };

@@ -128,6 +128,11 @@ std::unique_ptr<DatabaseFace> DBFactory::create()
     return create(databasePath());
 }
 
+std::unique_ptr<DatabaseFace> DBFactory::create(void* db)
+{
+    return create(DatabaseKind::ExternalLevelDB, databasePath(), db);
+}
+
 std::unique_ptr<DatabaseFace> DBFactory::create(fs::path const& _path)
 {
     return create(g_kind, _path);
@@ -138,7 +143,7 @@ std::unique_ptr<DatabaseFace> DBFactory::create(DatabaseKind _kind)
     return create(_kind, databasePath());
 }
 
-std::unique_ptr<DatabaseFace> DBFactory::create(DatabaseKind _kind, fs::path const& _path)
+std::unique_ptr<DatabaseFace> DBFactory::create(DatabaseKind _kind, fs::path const& _path, void* db)
 {
     switch (_kind)
     {
@@ -154,6 +159,9 @@ std::unique_ptr<DatabaseFace> DBFactory::create(DatabaseKind _kind, fs::path con
         // Silently ignore path since the concept of a db path doesn't make sense
         // when using an in-memory database
         return std::unique_ptr<DatabaseFace>(new MemoryDB());
+        break;
+    case DatabaseKind::ExternalLevelDB:
+        return std::unique_ptr<DatabaseFace>(new ExternalLevelDB(db));
         break;
     default:
         assert(false);

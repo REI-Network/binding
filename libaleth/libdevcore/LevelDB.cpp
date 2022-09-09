@@ -176,5 +176,108 @@ void LevelDB::forEach(std::function<bool(Slice, Slice)> _f) const
     }
 }
 
+
+leveldb::ReadOptions ExternalLevelDB::defaultReadOptions()
+{
+    return leveldb::ReadOptions();
+}
+
+leveldb::WriteOptions ExternalLevelDB::defaultWriteOptions()
+{
+    return leveldb::WriteOptions();
+}
+
+leveldb::Options ExternalLevelDB::defaultDBOptions()
+{
+    leveldb::Options options;
+    options.create_if_missing = true;
+    options.max_open_files = 256;
+    return options;
+}
+
+ExternalLevelDB::ExternalLevelDB(void* db, leveldb::ReadOptions _readOptions,
+    leveldb::WriteOptions _writeOptions, leveldb::Options _dbOptions)
+  : m_db((leveldb::DB*)db), m_readOptions(std::move(_readOptions)), m_writeOptions(std::move(_writeOptions))
+{
+}
+
+std::string ExternalLevelDB::lookup(Slice _key) const
+{
+    leveldb::Slice const key(_key.data(), _key.size());
+    std::string value;
+    auto const status = m_db->Get(m_readOptions, key, &value);
+    if (status.IsNotFound())
+        return std::string();
+
+    checkStatus(status);
+    return value;
+}
+
+bool ExternalLevelDB::exists(Slice _key) const
+{
+    std::string value;
+    leveldb::Slice const key(_key.data(), _key.size());
+    auto const status = m_db->Get(m_readOptions, key, &value);
+    if (status.IsNotFound())
+        return false;
+
+    checkStatus(status);
+    return true;
+}
+
+void ExternalLevelDB::insert(Slice _key, Slice _value)
+{
+    leveldb::Slice const key(_key.data(), _key.size());
+    leveldb::Slice const value(_value.data(), _value.size());
+    auto const status = m_db->Put(m_writeOptions, key, value);
+    checkStatus(status);
+}
+
+void ExternalLevelDB::kill(Slice _key)
+{
+    leveldb::Slice const key(_key.data(), _key.size());
+    auto const status = m_db->Delete(m_writeOptions, key);
+    checkStatus(status);
+}
+
+std::unique_ptr<WriteBatchFace> ExternalLevelDB::createWriteBatch() const
+{
+    return std::unique_ptr<WriteBatchFace>(new LevelDBWriteBatch());
+}
+
+void ExternalLevelDB::commit(std::unique_ptr<WriteBatchFace> _batch)
+{
+    if (!_batch)
+    {
+        BOOST_THROW_EXCEPTION(DatabaseError() << errinfo_comment("Cannot commit null batch"));
+    }
+    auto* batchPtr = dynamic_cast<LevelDBWriteBatch*>(_batch.get());
+    if (!batchPtr)
+    {
+        BOOST_THROW_EXCEPTION(
+            DatabaseError() << errinfo_comment("Invalid batch type passed to LevelDB::commit"));
+    }
+    auto const status = m_db->Write(m_writeOptions, &batchPtr->writeBatch());
+    checkStatus(status);
+}
+
+void ExternalLevelDB::forEach(std::function<bool(Slice, Slice)> _f) const
+{
+    std::unique_ptr<leveldb::Iterator> itr(m_db->NewIterator(m_readOptions));
+    if (itr == nullptr)
+    {
+        BOOST_THROW_EXCEPTION(DatabaseError() << errinfo_comment("null iterator"));
+    }
+    auto keepIterating = true;
+    for (itr->SeekToFirst(); keepIterating && itr->Valid(); itr->Next())
+    {
+        auto const dbKey = itr->key();
+        auto const dbValue = itr->value();
+        Slice const key(dbKey.data(), dbKey.size());
+        Slice const value(dbValue.data(), dbValue.size());
+        keepIterating = _f(key, value);
+    }
+}
+
 }  // namespace db
 }  // namespace dev
