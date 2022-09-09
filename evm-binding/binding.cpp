@@ -298,7 +298,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         // invoke cpp impl
         auto output = m_binding->runCall(stateRoot, header, tx, gasUsed, loader);
 
-        // TODO: return receipt and result
         return toNapiValue(info.Env(), output);
     }
 
