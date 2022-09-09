@@ -125,7 +125,7 @@ class EVMBinding
     /**
      * Initialize genesis state.
      * @param info - Genesis information
-     * @return State root hash 
+     * @return State root hash
      */
     h256 genesis(const GenesisInfo &info)
     {
@@ -146,7 +146,7 @@ class EVMBinding
      * @param tx - Transaction
      * @param gasUsed - Gas used
      * @param loader - A function used to load block hash
-     * @return New state root, execution result and transaction receipt 
+     * @return New state root, execution result and transaction receipt
      */
     auto runTx(const h256 &stateRoot, const BlockHeader &header, const Transaction &tx, const u256 &gasUsed,
                LastBlockHashes loader)
@@ -154,7 +154,7 @@ class EVMBinding
         return run(stateRoot, header, tx, gasUsed, loader, Permanence::Committed);
     }
 
-    /** 
+    /**
      * Execute call.
      * @param stateRoot - Previous state root hash
      * @param header - Block header
@@ -370,7 +370,7 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         return toNapiValue(info.Env(), newStateRoot);
     }
 
-     /** 
+    /**
      * Execute call.
      * @param info - Napi callback info
      * @param info_0 - Previous state root hash
@@ -405,7 +405,7 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
     }
 
     /**
-     * Parse napi value for vm. 
+     * Parse napi value for vm.
      * @param info - Napi callback info
      * @return Input params
      */
@@ -446,7 +446,7 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
 };
 
 /**
- * Register all seal engines 
+ * Register all seal engines
  * @param info - Napi callback info
  */
 Napi::Value init(const Napi::CallbackInfo &info)
