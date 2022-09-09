@@ -100,7 +100,9 @@ Napi::Value genesis(const Napi::CallbackInfo &info)
             state.addBalance(pair.first, pair.second);
         }
         state.commit(State::CommitBehaviour::KeepEmptyAccounts);
-        return Napi::String::From(env, toHex(state.rootHash()));
+        // commit data to db
+        state.db().commit();
+        return Napi::String::From(env, "0x" + toHex(state.rootHash()));
     }
     catch (const std::exception &err)
     {
@@ -166,6 +168,8 @@ Napi::Value runTx(const Napi::CallbackInfo &info)
         state.setRoot(stateRoot);
         // execute transaction
         auto [result, receipt] = state.execute(envInfo, *engine, tx, Permanence::Committed);
+        // commit data to db
+        state.db().commit();
 
         // TODO: return receipt
         return env.Undefined();

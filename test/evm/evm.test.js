@@ -1,6 +1,6 @@
 const evm = require("bindings")("evm-binding");
 
-console.log("evm:", evm);
+console.log("evm:", evm, "\n");
 
 const accounts = [
   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -36,15 +36,38 @@ const precompiles = [
   "0x0000000000000000000000000000000000000008",
 ];
 
+function toBuffer(str) {
+  if (str.startsWith("0x")) {
+    return Buffer.from(str.substr(2), "hex");
+  } else {
+    return Buffer.from(str, "hex");
+  }
+}
+
 try {
   evm.init();
-  const stateRoot = evm.genesis(
+  let stateRoot = evm.genesis(
     accounts.concat(precompiles),
     new Array(accounts.length)
       .fill("0x21e19e0c9bab2400000")
       .concat(new Array(precompiles.length).fill("0x00"))
   );
-  console.log("stateRoot:", stateRoot);
+  const { genesis, dump } = require("./dump.json");
+  if (genesis.stateRoot.toLowerCase() !== stateRoot.toLowerCase()) {
+    throw new Error("genesis state root mismatch!");
+  }
+  for (let i = 0; i < dump.length; i++) {
+    const { blockHeader, tx } = dump[i];
+    console.log("start run tx at index:", i);
+    evm.runTx(
+      toBuffer(stateRoot),
+      toBuffer(blockHeader.raw),
+      toBuffer(tx.raw),
+      "0x00"
+    );
+    stateRoot = blockHeader.stateRoot;
+    console.log("run tx succeed at index:", i);
+  }
 } catch (err) {
   console.log("error:", err);
 }
