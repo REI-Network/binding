@@ -1033,6 +1033,20 @@ NAPI_METHOD(db_init)
 }
 
 /**
+ * Returns a low-level db object.
+ */
+NAPI_METHOD(db_expose)
+{
+    NAPI_ARGV(1);
+    NAPI_DB_CONTEXT();
+
+    napi_value result;
+    NAPI_STATUS_THROWS(napi_create_external(env, database->db_, NULL, NULL, &result));
+
+    return result;
+}
+
+/**
  * Worker class for opening a database.
  * TODO: shouldn't this be a PriorityWorker?
  */
@@ -1095,8 +1109,9 @@ NAPI_METHOD(db_open)
     database->blockCache_ = leveldb::NewLRUCache(cacheSize);
 
     napi_value callback = argv[3];
-    OpenWorker *worker = new OpenWorker(env, database, callback, location, createIfMissing, errorIfExists, compression,
-                                        writeBufferSize, blockSize, maxOpenFiles, blockRestartInterval, maxFileSize, manifestFileMaxSize);
+    OpenWorker *worker =
+        new OpenWorker(env, database, callback, location, createIfMissing, errorIfExists, compression, writeBufferSize,
+                       blockSize, maxOpenFiles, blockRestartInterval, maxFileSize, manifestFileMaxSize);
     worker->Queue(env);
     delete[] location;
 
@@ -2202,6 +2217,7 @@ NAPI_METHOD(batch_write)
 NAPI_INIT()
 {
     NAPI_EXPORT_FUNCTION(db_init);
+    NAPI_EXPORT_FUNCTION(db_expose);
     NAPI_EXPORT_FUNCTION(db_open);
     NAPI_EXPORT_FUNCTION(db_close);
     NAPI_EXPORT_FUNCTION(db_put);

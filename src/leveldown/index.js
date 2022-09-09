@@ -37,11 +37,19 @@ function LevelDOWN (location) {
 util.inherits(LevelDOWN, AbstractLevelDOWN)
 
 LevelDOWN.prototype._open = function (options, callback) {
-  binding.db_open(this.context, this.location, options, callback)
+  const self = this
+  binding.db_open(this.context, this.location, options, function (...args) {
+    self.exposed = binding.db_expose(self.context)
+    callback && callback(...args)
+  })
 }
 
 LevelDOWN.prototype._close = function (callback) {
-  binding.db_close(this.context, callback)
+  const self = this
+  binding.db_close(this.context, function (...args) {
+    delete self.exposed
+    callback && callback(...args)
+  })
 }
 
 LevelDOWN.prototype._serializeKey = function (key) {

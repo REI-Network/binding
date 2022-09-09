@@ -21,4 +21,4 @@ target_include_directories(evm-binding PRIVATE ${CMAKE_JS_INC} ${NODE_ADDON_API_
 target_link_libraries(evm-binding PUBLIC devcore devcrypto ethashseal ethcore ethereum evm ${CMAKE_JS_LIB})
 
 # define NAPI_VERSION
-add_definitions(-DNAPI_VERSION=3)
+add_definitions(-DNAPI_VERSION=6)

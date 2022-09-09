@@ -1,6 +1,5 @@
-const evm = require("bindings")("evm-binding");
-
-console.log("evm:", evm, "\n");
+const { JSEVMBinding, init } = require("bindings")("evm-binding");
+const testCommon = require("../leveldown/common");
 
 const accounts = [
   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -44,31 +43,57 @@ function toBuffer(str) {
   }
 }
 
-try {
-  evm.init();
-  let stateRoot = evm.genesis(
-    accounts.concat(precompiles),
-    new Array(accounts.length)
-      .fill("0x21e19e0c9bab2400000")
-      .concat(new Array(precompiles.length).fill("0x00"))
-  );
-  const { genesis, dump } = require("./dump.json");
-  if (genesis.stateRoot.toLocaleLowerCase() !== stateRoot.toLocaleLowerCase()) {
-    throw new Error("genesis state root mismatch!");
-  }
-  for (let i = 0; i < dump.length; i++) {
-    const { blockHeader, tx } = dump[i];
-    console.log("start run tx at index:", i);
-    stateRoot = evm.runTx(
-      toBuffer(stateRoot),
-      toBuffer(blockHeader.raw),
-      toBuffer(tx.raw),
-      "0x00"
+(async () => {
+  const db = testCommon.factory();
+  try {
+    // open leveldb
+    await new Promise((r, j) => {
+      db.open((err) => {
+        err ? j(err) : r();
+      });
+    });
+
+    // init evm binding
+    init();
+
+    // create instance
+    const evm = new JSEVMBinding(db.exposed, 23579);
+
+    // init genesis state
+    let stateRoot = evm.genesis(
+      accounts.concat(precompiles),
+      new Array(accounts.length)
+        .fill("0x21e19e0c9bab2400000")
+        .concat(new Array(precompiles.length).fill("0x00"))
     );
-    console.log("run tx succeed at index:", i);
+
+    // load dump transactions
+    const { genesis, dump } = require("./dump.json");
+    if (
+      genesis.stateRoot.toLocaleLowerCase() !== stateRoot.toLocaleLowerCase()
+    ) {
+      throw new Error("genesis state root mismatch!");
+    }
+
+    // execute transactions
+    for (let i = 0; i < dump.length; i++) {
+      const { blockHeader, tx } = dump[i];
+      console.log("start run tx at index:", i);
+      stateRoot = evm.runTx(
+        toBuffer(stateRoot),
+        toBuffer(blockHeader.raw),
+        toBuffer(tx.raw),
+        "0x00",
+        () => []
+      );
+      console.log("run tx succeed at index:", i);
+    }
+  } catch (err) {
+    console.log("error:", err);
+  } finally {
+    // gracefully close leveldb
+    await new Promise((r) => {
+      db.close(r);
+    });
   }
-} catch (err) {
-  console.log("error:", err);
-} finally {
-  evm.destroy();
-}
+})();
