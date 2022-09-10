@@ -90,6 +90,7 @@ function toBuffer(str) {
       );
 
       console.log("run tx succeed at index:", i);
+      console.log("result:", JSON.stringify(result, undefined, "\t"));
 
       if (i === 1) {
         // hash()

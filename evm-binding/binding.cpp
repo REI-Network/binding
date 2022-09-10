@@ -145,7 +145,7 @@ Napi::Value toNapiValue(Napi::Env env, const ExecutionResult &er)
     auto result = Napi::Object::New(env);
     result.Set("gasUsed", toNapiValue(env, er.gasUsed));
     result.Set("excepted", toNapiValue(env, er.excepted));
-    result.Set("newAddress", toNapiValue(env, er.newAddress));
+    result.Set("newAddress", er.newAddress != ZeroAddress ? toNapiValue(env, er.newAddress) : env.Undefined());
     result.Set("output", toNapiValue(env, er.output));
     result.Set("gasRefunded", toNapiValue(env, er.gasRefunded));
     return result;
