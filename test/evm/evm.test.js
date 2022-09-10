@@ -79,6 +79,8 @@ function toBuffer(str) {
     for (let i = 0; i < dump.length; i++) {
       const { blockHeader, tx } = dump[i];
       console.log("start run tx at index:", i);
+
+      // execute single tx
       const newStateRoot = evm.runTx(
         toBuffer(stateRoot),
         toBuffer(blockHeader.raw),
@@ -86,7 +88,27 @@ function toBuffer(str) {
         "0x00",
         () => []
       );
+
       console.log("run tx succeed at index:", i);
+
+      if (i === 1) {
+        // hash()
+        const selector = toBuffer("0x09bd5a60");
+        const output = evm.runCall(
+          toBuffer(newStateRoot),
+          toBuffer(blockHeader.raw),
+          {
+            gas: 100000,
+            data: Buffer.concat([selector]),
+            to: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+          },
+          "0x00",
+          () => []
+        );
+        console.log("output:", output);
+      }
+
+      // update new state root
       stateRoot = newStateRoot;
     }
   } catch (err) {

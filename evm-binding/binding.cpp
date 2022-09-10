@@ -184,15 +184,21 @@ bytesConstRef toBytesConstRef(const Napi::Value &value, std::optional<bytesConst
     }
 }
 
-Address toAddress(const Napi::Value &value)
+Address toAddress(const Napi::Value &value, std::optional<Address> defaultValue = {})
 {
-    if (!value.IsString())
+    if (value.IsString())
+    {
+        return Address(value.As<Napi::String>());
+    }
+    else if ((value.IsUndefined() || value.IsNull()) && defaultValue.has_value())
+    {
+        return *defaultValue;
+    }
+    else
     {
         Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
-        return {};
+        return Address{};
     }
-
-    return Address(value.As<Napi::String>());
 }
 
 uint32_t toUint32(const Napi::Value &value)
@@ -233,15 +239,20 @@ Transaction toTx(const Napi::Value &input)
         auto gas = toU256(obj.Get("gas"), 0); // TODO: default gas
         auto data = toBytes(obj.Get("data"), bytes{});
         auto nonce = toU256(obj.Get("nonce"), 0);
-        auto destValue = obj.Get("dest");
+        auto from = toAddress(obj.Get("from"), ZeroAddress);
+        auto destValue = obj.Get("to");
         if (!destValue.IsUndefined() && !destValue.IsNull())
         {
             auto dest = toAddress(destValue);
-            return Transaction(value, gasPrice, gas, dest, data, nonce);
+            Transaction tx(value, gasPrice, gas, dest, data, nonce);
+            tx.forceSender(from);
+            return tx;
         }
         else
         {
-            return Transaction(value, gasPrice, gas, data, nonce);
+            Transaction tx(value, gasPrice, gas, data, nonce);
+            tx.forceSender(from);
+            return tx;
         }
     }
     else
