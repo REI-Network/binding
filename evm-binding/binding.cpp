@@ -1,4 +1,7 @@
+#include <functional>
 #include <optional>
+#include <utility>
+#include <vector>
 
 #include <napi.h>
 
@@ -9,6 +12,7 @@
 #include <libethereum/Transaction.h>
 #include <libethereum/TransactionReceipt.h>
 
+#include <libethcore/LogEntry.h>
 #include <libethcore/SealEngine.h>
 #include <libethcore/TransactionBase.h>
 
@@ -30,14 +34,157 @@ using GenesisInfo = std::vector<std::pair<Address, u256>>;
 
 template <class T> Napi::Value toNapiValue(Napi::Env env, const T &t);
 
-Napi::Value toNapiValue(Napi::Env env, const h256 &t)
+Napi::Value toNapiValue(Napi::Env env, const h256 &h)
 {
-    return Napi::String::New(env, "0x" + toHex(t));
+    return Napi::String::New(env, "0x" + toHex(h));
 }
 
-Napi::Value toNapiValue(Napi::Env env, const bytes &t)
+Napi::Value toNapiValue(Napi::Env env, const h2048 &h)
 {
-    return Napi::String::New(env, "0x" + toHex(t));
+    return Napi::String::New(env, "0x" + toHex(h));
+}
+
+Napi::Value toNapiValue(Napi::Env env, const bytes &bs)
+{
+    return Napi::String::New(env, "0x" + toHex(bs));
+}
+
+Napi::Value toNapiValue(Napi::Env env, const u256 &u)
+{
+    return Napi::String::New(env, "0x" + u.str(16));
+}
+
+Napi::Value toNapiValue(Napi::Env env, const uint8_t &i)
+{
+    return Napi::Number::New(env, i);
+}
+
+Napi::Value toNapiValue(Napi::Env env, const Address &a)
+{
+    return Napi::String::New(env, "0x" + a.hex());
+}
+
+Napi::Value toNapiValue(Napi::Env env, const h256s &_hs)
+{
+    auto hs = Napi::Array::New(env, _hs.size());
+    for (std::size_t i = 0; i < _hs.size(); i++)
+    {
+        hs.Set(i, toNapiValue(env, _hs[i]));
+    }
+    return hs;
+}
+
+Napi::Value toNapiValue(Napi::Env env, const TransactionException &te)
+{
+    if (te == TransactionException::None)
+    {
+        return env.Undefined();
+    }
+
+    auto error = Napi::Object::New(env);
+    switch (te)
+    {
+    case TransactionException::BadRLP:
+        error.Set("error", Napi::String::New(env, "bad RLP"));
+        break;
+    case TransactionException::InvalidFormat:
+        error.Set("error", Napi::String::New(env, "invalid format"));
+        break;
+    case TransactionException::OutOfGasIntrinsic:
+        error.Set("error", Napi::String::New(env, "out of gas intrinsic"));
+        break;
+    case TransactionException::InvalidSignature:
+        error.Set("error", Napi::String::New(env, "invalid signature"));
+        break;
+    case TransactionException::InvalidNonce:
+        error.Set("error", Napi::String::New(env, "invalid nonce"));
+        break;
+    case TransactionException::NotEnoughCash:
+        error.Set("error", Napi::String::New(env, "not enough cash"));
+        break;
+    case TransactionException::OutOfGasBase:
+        error.Set("error", Napi::String::New(env, "out of gas base"));
+        break;
+    case TransactionException::BlockGasLimitReached:
+        error.Set("error", Napi::String::New(env, "block gas limit reached"));
+        break;
+    case TransactionException::BadInstruction:
+        error.Set("error", Napi::String::New(env, "bad instruction"));
+        break;
+    case TransactionException::BadJumpDestination:
+        error.Set("error", Napi::String::New(env, "bad jump destination"));
+        break;
+    case TransactionException::OutOfGas:
+        error.Set("error", Napi::String::New(env, "out of gas"));
+        break;
+    case TransactionException::OutOfStack:
+        error.Set("error", Napi::String::New(env, "out of stack"));
+        break;
+    case TransactionException::StackUnderflow:
+        error.Set("error", Napi::String::New(env, "stack under flow"));
+        break;
+    case TransactionException::RevertInstruction:
+        error.Set("error", Napi::String::New(env, "revert instruction"));
+        break;
+    case TransactionException::InvalidZeroSignatureFormat:
+        error.Set("error", Napi::String::New(env, "invalid zero signature format"));
+        break;
+    case TransactionException::AddressAlreadyUsed:
+        error.Set("error", Napi::String::New(env, "address already used"));
+        break;
+    case TransactionException::Unknown:
+    default:
+        error.Set("error", Napi::String::New(env, "unknown"));
+        break;
+    }
+    return error;
+}
+
+Napi::Value toNapiValue(Napi::Env env, const ExecutionResult &er)
+{
+    auto result = Napi::Object::New(env);
+    result.Set("gasUsed", toNapiValue(env, er.gasUsed));
+    result.Set("excepted", toNapiValue(env, er.excepted));
+    result.Set("newAddress", toNapiValue(env, er.newAddress));
+    result.Set("output", toNapiValue(env, er.output));
+    result.Set("gasRefunded", toNapiValue(env, er.gasRefunded));
+    return result;
+}
+
+Napi::Value toNapiValue(Napi::Env env, const LogEntry &_log)
+{
+    auto log = Napi::Object::New(env);
+    log.Set("address", toNapiValue(env, _log.address));
+    log.Set("topics", toNapiValue(env, _log.topics));
+    log.Set("data", toNapiValue(env, _log.data));
+    return log;
+}
+
+Napi::Value toNapiValue(Napi::Env env, const LogEntries &_logs)
+{
+    auto logs = Napi::Array::New(env, _logs.size());
+    for (std::size_t i = 0; i < _logs.size(); i++)
+    {
+        logs.Set(i, toNapiValue(env, _logs[i]));
+    }
+    return logs;
+}
+
+Napi::Value toNapiValue(Napi::Env env, const TransactionReceipt &_receipt)
+{
+    auto receipt = Napi::Object::New(env);
+    receipt.Set("logs", toNapiValue(env, _receipt.log()));
+    receipt.Set("bloom", toNapiValue(env, _receipt.bloom()));
+    receipt.Set("cumulativeGasUsed", toNapiValue(env, _receipt.cumulativeGasUsed()));
+    if (_receipt.hasStatusCode())
+    {
+        receipt.Set("status", toNapiValue(env, _receipt.statusCode()));
+    }
+    else
+    {
+        receipt.Set("stateRoot", toNapiValue(env, _receipt.stateRoot()));
+    }
+    return receipt;
 }
 
 LastBlockHashesLoader toLoader(const Napi::Value &value)
@@ -554,7 +701,7 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      * @param info_2 - RLP encoded transaction or transaction object
      * @param info_3 - Gas used
      * @param info_4 - A function used to load block hash
-     * @return New state root hash
+     * @return New state root hash, execution result and receipt
      */
     Napi::Value runTx(const Napi::CallbackInfo &info)
     {
@@ -566,10 +713,12 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         // invoke cpp impl
         return executeUnderTryCatch(info.Env(), [&, this]() {
             auto [stateRoot, header, tx, gasUsed, loader] = params;
-            auto [newStateRoot, result, receipt] = m_binding->runTx(stateRoot, header, tx, gasUsed, loader);
-
-            // TODO: return receipt and result
-            return toNapiValue(info.Env(), newStateRoot);
+            auto [newStateRoot, executionResult, receipt] = m_binding->runTx(stateRoot, header, tx, gasUsed, loader);
+            auto result = Napi::Object::New(info.Env());
+            result.Set("stateRoot", toNapiValue(info.Env(), newStateRoot));
+            result.Set("result", toNapiValue(info.Env(), executionResult));
+            result.Set("receipt", toNapiValue(info.Env(), receipt));
+            return result;
         });
     }
 

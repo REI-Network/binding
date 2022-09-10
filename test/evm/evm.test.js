@@ -81,7 +81,7 @@ function toBuffer(str) {
       console.log("start run tx at index:", i);
 
       // execute single tx
-      const newStateRoot = evm.runTx(
+      const result = evm.runTx(
         toBuffer(stateRoot),
         toBuffer(blockHeader.raw),
         toBuffer(tx.raw),
@@ -95,7 +95,7 @@ function toBuffer(str) {
         // hash()
         const selector = toBuffer("0x09bd5a60");
         const output = evm.runCall(
-          toBuffer(newStateRoot),
+          toBuffer(result.stateRoot),
           toBuffer(blockHeader.raw),
           {
             gas: 100000,
@@ -109,7 +109,7 @@ function toBuffer(str) {
       }
 
       // update new state root
-      stateRoot = newStateRoot;
+      stateRoot = result.stateRoot;
     }
   } catch (err) {
     console.log("error:", err);
