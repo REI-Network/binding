@@ -558,14 +558,19 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value runTx(const Napi::CallbackInfo &info)
     {
+        checkBinding(info);
+
         // parse input params
-        auto [stateRoot, header, tx, gasUsed, loader] = parseRunParams(info);
+        auto params = parseRunParams(info);
 
         // invoke cpp impl
-        auto [newStateRoot, result, receipt] = m_binding->runTx(stateRoot, header, tx, gasUsed, loader);
+        return executeUnderTryCatch(info.Env(), [&, this]() {
+            auto [stateRoot, header, tx, gasUsed, loader] = params;
+            auto [newStateRoot, result, receipt] = m_binding->runTx(stateRoot, header, tx, gasUsed, loader);
 
-        // TODO: return receipt and result
-        return toNapiValue(info.Env(), newStateRoot);
+            // TODO: return receipt and result
+            return toNapiValue(info.Env(), newStateRoot);
+        });
     }
 
     /**
@@ -580,13 +585,17 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value runCall(const Napi::CallbackInfo &info)
     {
+        checkBinding(info);
+
         // parse input params
-        auto [stateRoot, header, tx, gasUsed, loader] = parseRunParams(info);
+        auto params = parseRunParams(info);
 
         // invoke cpp impl
-        auto output = m_binding->runCall(stateRoot, header, tx, gasUsed, loader);
-
-        return toNapiValue(info.Env(), output);
+        return executeUnderTryCatch(info.Env(), [&, this]() {
+            auto [stateRoot, header, tx, gasUsed, loader] = params;
+            auto output = m_binding->runCall(stateRoot, header, tx, gasUsed, loader);
+            return toNapiValue(info.Env(), output);
+        });
     }
 
   private:
@@ -618,6 +627,31 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         auto loader = toLoader(info[4]);
 
         return std::make_tuple(stateRoot, header, tx, gasUsed, loader);
+    }
+
+    /**
+     * Execute function under try/catch
+     * and throw a napi error if there is a problem
+     * @param env - Napi env
+     * @param func - Logic function
+     * @return Execution result
+     */
+    Napi::Value executeUnderTryCatch(Napi::Env env, std::function<Napi::Value()> func)
+    {
+        try
+        {
+            return func();
+        }
+        catch (const std::exception &err)
+        {
+            Napi::Error::New(env, err.what()).ThrowAsJavaScriptException();
+            return env.Undefined();
+        }
+        catch (...)
+        {
+            Napi::Error::New(env, "Unknown error").ThrowAsJavaScriptException();
+            return env.Undefined();
+        }
     }
 
     std::shared_ptr<EVMBinding> m_binding;
