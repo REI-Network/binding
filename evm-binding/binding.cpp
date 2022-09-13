@@ -187,45 +187,6 @@ Napi::Value toNapiValue(Napi::Env env, const TransactionReceipt &_receipt)
     return receipt;
 }
 
-LastBlockHashesLoader toLoader(const Napi::Value &value)
-{
-    if (!value.IsFunction())
-    {
-        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
-        return 0;
-    }
-
-    return [func = value.As<Napi::Function>()]() {
-        auto result = func.Call({});
-
-        if (!result.IsArray())
-        {
-            Napi::TypeError::New(func.Env(), "Wrong arguments").ThrowAsJavaScriptException();
-            return h256s{};
-        }
-
-        auto array = result.As<Napi::Array>();
-
-        h256s hashes;
-        for (std::size_t i = 0; i < array.Length(); i++)
-        {
-            auto value = array.Get(Napi::Number::New(func.Env(), i));
-
-            if (!value.IsBuffer())
-            {
-                Napi::TypeError::New(func.Env(), "Wrong arguments").ThrowAsJavaScriptException();
-                return h256s{};
-            }
-
-            auto buffer = value.As<Buffer>();
-
-            hashes.emplace_back(bytesConstRef(buffer.Data(), buffer.Length()));
-        }
-
-        return hashes;
-    };
-}
-
 u256 toU256(const Napi::Value &value, std::optional<u256> defaultValue = {})
 {
     if (value.IsString())
@@ -368,6 +329,37 @@ void *toExternalPointer(const Napi::Value &value)
     }
 
     return value.As<External>().Data();
+}
+
+h256s toH256s(const Napi::Value &value)
+{
+    h256s hashes;
+
+    if (!value.IsArray())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return hashes;
+    }
+
+    auto array = value.As<Napi::Array>();
+
+    for (std::size_t i = 0; i < array.Length(); i++)
+    {
+        hashes.emplace_back(toBytesConstRef(array.Get(i)));
+    }
+
+    return hashes;
+}
+
+LastBlockHashesLoader toLoader(const Napi::Value &value)
+{
+    if (!value.IsFunction())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return 0;
+    }
+
+    return [func = value.As<Napi::Function>()]() { return toH256s(func.Call({})); };
 }
 
 Transaction toTx(const Napi::Value &input)
