@@ -309,15 +309,21 @@ Address toAddress(const Napi::Value &value, std::optional<Address> defaultValue 
     }
 }
 
-uint32_t toUint32(const Napi::Value &value)
+uint32_t toUint32(const Napi::Value &value, std::optional<uint32_t> defaultValue = {})
 {
-    if (!value.IsNumber())
+    if (value.IsNumber())
+    {
+        return value.As<Napi::Number>().Uint32Value();
+    }
+    else if ((value.IsUndefined() || value.IsNull()) && defaultValue.has_value())
+    {
+        return *defaultValue;
+    }
+    else
     {
         Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
         return 0;
     }
-
-    return value.As<Napi::Number>().Uint32Value();
 }
 
 void *toExternalPointer(const Napi::Value &value)
@@ -375,7 +381,7 @@ Transaction toTx(const Napi::Value &input)
         auto obj = input.As<Napi::Object>();
         auto value = toU256(obj.Get("value"), 0);
         auto gasPrice = toU256(obj.Get("gasPrice"), 0);
-        auto gas = toU256(obj.Get("gas"), 0); // TODO: default gas
+        auto gas = toU256(obj.Get("gas"), 0xffffff);
         auto data = toBytes(obj.Get("data"), bytes{});
         auto nonce = toU256(obj.Get("nonce"), 0);
         auto from = toAddress(obj.Get("from"), ZeroAddress);
@@ -413,17 +419,18 @@ BlockHeader toHeader(const Napi::Value &value)
         // decode as object
         auto obj = value.As<Napi::Object>();
         BlockHeader header;
-        header.setParentHash(toH256(obj.Get("parentHash")));
-        header.setTimestamp(toUint32(obj.Get("timestamp")));
-        header.setAuthor(toAddress(obj.Get("author")));
-        header.setRoots(toH256(obj.Get("transactionsRoot")), toH256(obj.Get("receiptsRoot")),
-                        toH256(obj.Get("sha3Uncles")), toH256(obj.Get("stateRoot")));
-        header.setGasUsed(toU256(obj.Get("gasUsed")));
-        header.setNumber(toUint32(obj.Get("number")));
-        header.setGasLimit(toU256(obj.Get("gasLimit")));
-        header.setExtraData(toBytes(obj.Get("extraData")));
-        header.setLogBloom(toH2048(obj.Get("logBloom")));
-        header.setDifficulty(toU256(obj.Get("difficulty")));
+        header.setParentHash(toH256(obj.Get("parentHash"), h256{}));
+        header.setTimestamp(toUint32(obj.Get("timestamp"), 0));
+        header.setAuthor(toAddress(obj.Get("author"), ZeroAddress));
+        header.setRoots(toH256(obj.Get("transactionsRoot"), EmptyListSHA3),
+                        toH256(obj.Get("receiptsRoot"), EmptyListSHA3), toH256(obj.Get("sha3Uncles"), EmptyListSHA3),
+                        toH256(obj.Get("stateRoot"), EmptyTrie));
+        header.setGasUsed(toU256(obj.Get("gasUsed"), 0));
+        header.setNumber(toUint32(obj.Get("number"), 0));
+        header.setGasLimit(toU256(obj.Get("gasLimit"), 0xffffff));
+        header.setExtraData(toBytes(obj.Get("extraData"), bytes{}));
+        header.setLogBloom(toH2048(obj.Get("logBloom"), h2048{}));
+        header.setDifficulty(toU256(obj.Get("difficulty"), 0));
         return header;
     }
     else
