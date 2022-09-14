@@ -8,7 +8,7 @@
 
 #include "EthashProofOfWork.h"
 #include <libethcore/SealEngine.h>
-#include <libethereum/Client.h>
+// #include <libethereum/Client.h>
 #include <libethereum/GenericFarm.h>
 
 #include <ethash/ethash.hpp>

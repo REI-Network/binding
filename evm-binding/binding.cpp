@@ -20,6 +20,7 @@
 #include <libdevcore/OverlayDB.h>
 #include <libdevcore/RLP.h>
 
+#include <libethashseal/Ethash.h>
 #include <libethashseal/GenesisInfo.h>
 
 using namespace dev;
@@ -813,6 +814,7 @@ Napi::Value init(const Napi::CallbackInfo &info)
 {
     NoProof::init();
     NoReward::init();
+    Ethash::init();
     return info.Env().Undefined();
 }
 

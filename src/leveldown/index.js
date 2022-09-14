@@ -32,6 +32,7 @@ function LevelDOWN (location) {
 
   this.location = location
   this.context = binding.db_init()
+  this.exposed = null
 }
 
 util.inherits(LevelDOWN, AbstractLevelDOWN)

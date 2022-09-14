@@ -84,7 +84,7 @@ void Ethash::verify(Strictness _s, BlockHeader const& _bi, BlockHeader const& _p
     if (_s == CheckEverything && _bi.parentHash() && !verifySeal(_bi))
     {
         ethash::result result =
-            ethash::hash(ethash::get_global_epoch_context(ethash::get_epoch_number(_bi.number())),
+            ethash::hash(*ethash::create_epoch_context_full(ethash::get_epoch_number(_bi.number())),
                 toEthash(_bi.hash(WithoutSeal)), toEthash(nonce(_bi)));
 
         h256 mix{result.mix_hash.bytes, h256::ConstructFromPointer};
@@ -142,7 +142,7 @@ bool Ethash::quickVerifySeal(BlockHeader const& _blockHeader) const
     Nonce const n = nonce(_blockHeader);
     h256 const m = mixHash(_blockHeader);
 
-    return ethash::verify_final_hash(toEthash(h), toEthash(m), toEthash(n), toEthash(b));
+    return !!ethash::verify_final_hash_against_difficulty(toEthash(h), toEthash(m), toEthash(n), toEthash(b));
 }
 
 bool Ethash::verifySeal(BlockHeader const& _blockHeader) const
@@ -152,9 +152,9 @@ bool Ethash::verifySeal(BlockHeader const& _blockHeader) const
     Nonce const n = nonce(_blockHeader);
     h256 const m = mixHash(_blockHeader);
 
-    auto& context =
-        ethash::get_global_epoch_context(ethash::get_epoch_number(_blockHeader.number()));
-    return ethash::verify(context, toEthash(h), toEthash(m), toEthash(n), toEthash(b));
+    auto context =
+        ethash::create_epoch_context(ethash::get_epoch_number(_blockHeader.number()));
+    return !!ethash::verify_against_boundary(*context, toEthash(h), toEthash(m), toEthash(n), toEthash(b));
 }
 
 void Ethash::generateSeal(BlockHeader const& _bi)
