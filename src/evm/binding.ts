@@ -68,6 +68,17 @@ export declare class JSEVMBinding {
   chainID(): number;
 
   /**
+   * Force set hardfork by name
+   * @param name - Hardfork name
+   */
+  setHardfork(name: string);
+
+  /**
+   * Reset hardfork
+   */
+  resetHardfork();
+
+  /**
    * Initialize genesis state.
    * @param addresses - An array containing all addresses
    * @param balances - An array containing the balances of all addresses

@@ -188,6 +188,17 @@ Napi::Value toNapiValue(Napi::Env env, const TransactionReceipt &_receipt)
     return receipt;
 }
 
+std::string toString(const Napi::Value &value)
+{
+    if (!value.IsString())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return std::string{};
+    }
+
+    return value.As<Napi::String>();
+}
+
 u256 toU256(const Napi::Value &value, std::optional<u256> defaultValue = {})
 {
     if (value.IsString())
@@ -489,6 +500,23 @@ class EVMBinding
     }
 
     /**
+     * Force set hardfork by name
+     * @param hardfork - Hardfork name
+     */
+    void setHardfork(const std::string &hardfork)
+    {
+        m_engine->setEvmSchedule(hardfork);
+    }
+
+    /**
+     * Reset hardfork
+     */
+    void resetHardfork()
+    {
+        m_engine->resetEvmSchedule();
+    }
+
+    /**
      * Initialize genesis state.
      * @param info - Genesis information
      * @return State root hash
@@ -612,6 +640,8 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         Napi::Function func = DefineClass(env, "JSEVMBinding",
                                           {
                                               InstanceMethod("chainID", &JSEVMBinding::chainID),
+                                              InstanceMethod("setHardfork", &JSEVMBinding::setHardfork),
+                                              InstanceMethod("resetHardfork", &JSEVMBinding::resetHardfork),
                                               InstanceMethod("genesis", &JSEVMBinding::genesis),
                                               InstanceMethod("runTx", &JSEVMBinding::runTx),
                                               InstanceMethod("runCall", &JSEVMBinding::runCall),
@@ -647,6 +677,31 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
         checkBinding(info);
 
         return Napi::Number::New(info.Env(), m_binding->chainID());
+    }
+
+    /**
+     * Force set hardfork by name
+     * @param info - Napi callback info
+     * @param info_0 - Hardfork name
+     */
+    Napi::Value setHardfork(const Napi::CallbackInfo &info)
+    {
+        checkBinding(info);
+
+        m_binding->setHardfork(toString(info[0]));
+
+        return info.Env().Undefined();
+    }
+
+    /**
+     * Reset hardfork
+     * @param info - Napi callback info
+     */
+    Napi::Value resetHardfork(const Napi::CallbackInfo &info)
+    {
+        checkBinding(info);
+
+        return info.Env().Undefined();
     }
 
     /**

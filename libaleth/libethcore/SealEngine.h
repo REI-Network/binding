@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <optional>
 #include <functional>
 #include <unordered_map>
 #include <libdevcore/Guards.h>
@@ -63,6 +64,8 @@ public:
     void setChainParams(ChainOperationParams const& _params) { m_params = _params; }
     SealEngineFace* withChainParams(ChainOperationParams const& _params) { setChainParams(_params); return this; }
     virtual EVMSchedule const& evmSchedule(u256 const& _blockNumber) const = 0;
+    virtual void setEvmSchedule(const std::string& _hardfork) = 0;
+    virtual void resetEvmSchedule() = 0;
     virtual u256 blockReward(u256 const& _blockNumber) const = 0;
 
     virtual bool isPrecompiled(Address const& _a, u256 const& _blockNumber) const
@@ -95,11 +98,14 @@ public:
         NonceField = 1
     };
     void onSealGenerated(std::function<void(bytes const&)> const& _f) override { m_onSealGenerated = _f; }
+    void setEvmSchedule(const std::string& _hardfork) override;
+    void resetEvmSchedule() override { m_forceSchedule = {}; };
     EVMSchedule const& evmSchedule(u256 const& _blockNumber) const override;
     u256 blockReward(u256 const& _blockNumber) const override;
 
 protected:
     std::function<void(bytes const& s)> m_onSealGenerated;
+    std::optional<const EVMSchedule*> m_forceSchedule;
 };
 
 using SealEngineFactory = std::function<SealEngineFace*()>;

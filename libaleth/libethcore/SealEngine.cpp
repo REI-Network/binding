@@ -4,6 +4,7 @@
 
 #include "SealEngine.h"
 #include "TransactionBase.h"
+#include <libethcore/EVMSchedule.h>
 #include <libethcore/CommonJS.h>
 
 using namespace std;
@@ -161,8 +162,53 @@ SealEngineFace* SealEngineRegistrar::create(ChainOperationParams const& _params)
     return ret;
 }
 
+void SealEngineBase::setEvmSchedule(const std::string& _hardfork)
+{
+    if (_hardfork == "default")
+    {
+        m_forceSchedule = &DefaultSchedule;
+    }
+    else if (_hardfork == "frontier")
+    {
+        m_forceSchedule = &FrontierSchedule;
+    }
+    else if (_hardfork == "homestead")
+    {
+        m_forceSchedule = &HomesteadSchedule;
+    }
+    else if (_hardfork == "byzantium")
+    {
+        m_forceSchedule = &ByzantiumSchedule;
+    }
+    else if (_hardfork == "constantinople")
+    {
+        // TODO: ConstantinopleFixSchedule??
+        m_forceSchedule = &ConstantinopleSchedule;
+    }
+    else if (_hardfork == "istanbul")
+    {
+        m_forceSchedule = &IstanbulSchedule;
+    }
+    else if (_hardfork == "muirGlacier")
+    {
+        m_forceSchedule = &MuirGlacierSchedule;
+    }
+    else if (_hardfork == "berlin")
+    {
+        m_forceSchedule = &BerlinSchedule;
+    }
+    else
+    {
+        BOOST_THROW_EXCEPTION(std::runtime_error("Invalid hardfork name: " + _hardfork));
+    }
+}
+
 EVMSchedule const& SealEngineBase::evmSchedule(u256 const& _blockNumber) const
 {
+    if (m_forceSchedule.has_value())
+    {
+        return **m_forceSchedule;
+    }
     return chainParams().scheduleForBlockNumber(_blockNumber);
 }
 
