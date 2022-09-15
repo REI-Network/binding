@@ -17,6 +17,7 @@
 #include <libethcore/TransactionBase.h>
 
 #include <libdevcore/DBFactory.h>
+#include <libdevcore/Log.h>
 #include <libdevcore/OverlayDB.h>
 #include <libdevcore/RLP.h>
 
@@ -862,7 +863,7 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
 };
 
 /**
- * Register all seal engines
+ * Register all seal engines and set log level
  * @param info - Napi callback info
  */
 Napi::Value init(const Napi::CallbackInfo &info)
@@ -870,6 +871,11 @@ Napi::Value init(const Napi::CallbackInfo &info)
     NoProof::init();
     NoReward::init();
     Ethash::init();
+
+    LoggingOptions options;
+    options.verbosity = Verbosity::VerbosityError;
+    setupLogging(options);
+
     return info.Env().Undefined();
 }
 
