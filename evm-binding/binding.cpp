@@ -879,11 +879,11 @@ Napi::Value init(const Napi::CallbackInfo &info)
     return info.Env().Undefined();
 }
 
-Napi::Object Init(Napi::Env env, Napi::Object exports)
+Napi::Object initExports(Napi::Env env, Napi::Object exports)
 {
     JSEVMBinding::Init(env, exports);
     exports.Set(Napi::String::New(env, "init"), Napi::Function::New(env, init));
     return exports;
 }
 
-NODE_API_MODULE(binding, Init)
+NODE_API_MODULE(binding, initExports)
