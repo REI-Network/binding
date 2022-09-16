@@ -190,3 +190,8 @@ h256 ExtVM::blockHash(u256 _number)
     std::tie(res, std::ignore) = m_s.execute(envInfo(), m_sealEngine, tx, Permanence::Reverted);
     return h256(res.output);
 }
+
+bool ExtVM::checkNonce(Address addr)
+{
+    return m_s.getNonce(addr) < std::numeric_limits<uint64_t>::max();
+}

@@ -248,14 +248,21 @@ evmc::Result EvmCHost::call(evmc_message const& _msg) noexcept
     return evmc::Result{evmcResult};
 }
 
-evmc_access_status EvmCHost::access_account(const evmc::address& addr) noexcept {
+evmc_access_status EvmCHost::access_account(const evmc::address& addr) noexcept
+{
     // TODO:
     return EVMC_ACCESS_COLD;
 }
 
-evmc_access_status EvmCHost::access_storage(const evmc::address& addr, const evmc::bytes32& key) noexcept {
+evmc_access_status EvmCHost::access_storage(const evmc::address& addr, const evmc::bytes32& key) noexcept
+{
     // TODO:
     return EVMC_ACCESS_COLD;
+}
+
+bool EvmCHost::check_nonce(const evmc::address& addr) noexcept
+{
+    return m_extVM.checkNonce(fromEvmC(addr));
 }
 
 ExtVMFace::ExtVMFace(EnvInfo const& _envInfo, Address _myAddress, Address _caller, Address _origin,

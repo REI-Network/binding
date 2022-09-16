@@ -257,6 +257,9 @@ public:
     /// Return the EVM gas-price schedule for this execution context.
     virtual EVMSchedule const& evmSchedule() const { return DefaultSchedule; }
 
+    /// Check nonce for EIP-2681
+    virtual bool checkNonce(Address) { return true; }
+
 private:
     EnvInfo const& m_envInfo;
 
@@ -315,6 +318,8 @@ public:
     evmc_access_status access_account(const evmc::address& addr) noexcept override;
 
     evmc_access_status access_storage(const evmc::address& addr, const evmc::bytes32& key) noexcept override;
+
+    bool check_nonce(const evmc::address& addr) noexcept override;
 
 private:
     evmc::Result create(evmc_message const& _msg) noexcept;
