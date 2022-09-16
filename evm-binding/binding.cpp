@@ -2,6 +2,7 @@
 #include <optional>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 #include <napi.h>
 
@@ -474,6 +475,26 @@ class LastBlockHashes : public LastBlockHashesFace
     LastBlockHashesLoader m_loader;
 };
 
+// global chain params cache
+std::unordered_map<Network, ChainParams> g_chainParams;
+
+/**
+ * Load chain params for network
+ * @param network - Network id
+ * @return Chain params
+ */
+ChainParams& loadChainParam(Network network)
+{
+    auto itr = g_chainParams.find(network);
+    if (itr != g_chainParams.end())
+    {
+        return itr->second;
+    }
+
+    auto [insertedItr, tookPlace] = g_chainParams.insert(std::make_pair(network, ChainParams(genesisInfo(network), genesisStateRoot(network))));
+    return insertedItr->second;
+}
+
 /**
  * C++ implementation of EVM binding.
  */
@@ -486,7 +507,7 @@ class EVMBinding
      * @param network - Network id
      */
     EVMBinding(void *db, Network network)
-        : m_db(DBFactory::create(db)), m_params(genesisInfo(network), genesisStateRoot(network)),
+        : m_db(DBFactory::create(db)), m_params(loadChainParam(network)),
           m_engine(m_params.createSealEngine())
     {
     }
@@ -624,7 +645,7 @@ class EVMBinding
     }
 
     OverlayDB m_db;
-    ChainParams m_params;
+    ChainParams& m_params;
     std::unique_ptr<SealEngineFace> m_engine;
     std::shared_ptr<State> m_state;
 };
