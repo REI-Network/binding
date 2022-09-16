@@ -723,6 +723,8 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
     {
         checkBinding(info);
 
+        m_binding->resetHardfork();
+
         return info.Env().Undefined();
     }
 
