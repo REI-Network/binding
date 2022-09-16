@@ -72,6 +72,7 @@ DEV_SIMPLE_EXCEPTION(AddressAlreadyUsed);
 DEV_SIMPLE_EXCEPTION(ZeroSignatureTransaction);
 DEV_SIMPLE_EXCEPTION(UnknownTransactionValidationError);
 DEV_SIMPLE_EXCEPTION(UnknownError);
+DEV_SIMPLE_EXCEPTION(EIP3607InvalidSender);
 
 DEV_SIMPLE_EXCEPTION(InvalidDatabaseKind);
 DEV_SIMPLE_EXCEPTION(DatabaseAlreadyOpen);

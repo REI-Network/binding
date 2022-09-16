@@ -28,6 +28,8 @@ struct EVMSchedule
     bool eip158Mode = false;
     bool eip1283Mode = false;
     bool eip2200Mode = false;
+    bool eip2681Mode = true;
+    bool eip3607Mode = true;
     bool haveBitwiseShifting = false;
     bool haveRevert = false;
     bool haveReturnData = false;

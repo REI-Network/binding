@@ -88,6 +88,12 @@ void Executive::initialize(Transaction const& _transaction)
     try
     {
         m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
+
+        // TODO: This doesn't belong here!
+        eth::EVMSchedule const& schedule = m_sealEngine.evmSchedule(m_envInfo.header().number());
+        // Check sender address for EIP-3607
+        if (schedule.eip3607Mode && m_s.addressHasCode(m_t.sender()))
+             BOOST_THROW_EXCEPTION(EIP3607InvalideSender());
     }
     catch (Exception const& ex)
     {

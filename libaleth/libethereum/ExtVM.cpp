@@ -193,5 +193,8 @@ h256 ExtVM::blockHash(u256 _number)
 
 bool ExtVM::checkNonce(Address addr)
 {
+    if (!m_evmSchedule.eip2681Mode)
+        return true;
+
     return m_s.getNonce(addr) < std::numeric_limits<uint64_t>::max();
 }
