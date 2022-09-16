@@ -76,5 +76,5 @@ add_library(
 )
 
 target_include_directories(ethereum PRIVATE "${UTILS_INCLUDE_DIR}")
-target_link_directories(ethereum PRIVATE ${JSONCPP_ROOT}/lib)
+target_link_directories(ethereum PUBLIC ${JSONCPP_ROOT}/lib)
 target_link_libraries(ethereum PUBLIC evm ethcore devcrypto devcore PRIVATE jsoncpp snappy Boost::fiber Boost::context)

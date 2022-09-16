@@ -15,6 +15,8 @@ if (NOT MSVC)
 	endif()
 endif(NOT MSVC)
 
+set(BUILD_SHARED_LIBS 		OFF)
+
 add_subdirectory(evmone)
 
 project(rei-binding)
