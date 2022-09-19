@@ -295,7 +295,10 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u2
     m_s.transferBalance(_sender, m_newAddress, _endowment);
 
     u256 newNonce = m_s.requireAccountStartNonce();
-    if (m_envInfo.number() >= m_sealEngine.chainParams().EIP158ForkBlock)
+    // if (m_envInfo.number() >= m_sealEngine.chainParams().EIP158ForkBlock)
+    //     newNonce += 1;
+    // use EVMSchedule
+    if (m_sealEngine.evmSchedule(m_envInfo.number()).eip158Mode)
         newNonce += 1;
     m_s.setNonce(m_newAddress, newNonce);
 

@@ -645,7 +645,9 @@ std::pair<ExecutionResult, TransactionReceipt> State::execute(EnvInfo const& _en
             m_cache.clear();
             break;
         case Permanence::Committed:
-            removeEmptyAccounts = _envInfo.number() >= _sealEngine.chainParams().EIP158ForkBlock;
+            // removeEmptyAccounts = _envInfo.number() >= _sealEngine.chainParams().EIP158ForkBlock;
+            // use EVMSchedule
+            removeEmptyAccounts = _sealEngine.evmSchedule(_envInfo.number()).eip158Mode;
             commit(removeEmptyAccounts ? State::CommitBehaviour::RemoveEmptyAccounts : State::CommitBehaviour::KeepEmptyAccounts);
             break;
         case Permanence::Uncommitted:

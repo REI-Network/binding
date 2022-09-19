@@ -124,9 +124,11 @@ void SealEngineFace::populateFromParent(BlockHeader& _bi, BlockHeader const& _pa
 void SealEngineFace::verifyTransaction(ImportRequirements::value _ir, TransactionBase const& _t,
                                        BlockHeader const& _header, u256 const& _gasUsed) const
 {
-    // Do not check for replay protection (for compatibility with ethereum-tests).
     // if ((_ir & ImportRequirements::TransactionSignatures) && _header.number() < chainParams().EIP158ForkBlock && _t.isReplayProtected())
     //     BOOST_THROW_EXCEPTION(InvalidSignature());
+    // use EVMSchedule
+    if ((_ir & ImportRequirements::TransactionSignatures) && !evmSchedule(_header.number()).eip158Mode && _t.isReplayProtected())
+        BOOST_THROW_EXCEPTION(InvalidSignature());
 
     if ((_ir & ImportRequirements::TransactionSignatures) &&
         _header.number() < chainParams().experimentalForkBlock && _t.hasZeroSignature())
