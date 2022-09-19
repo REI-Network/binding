@@ -1,8 +1,8 @@
 #include <functional>
 #include <optional>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include <unordered_map>
 
 #include <napi.h>
 
@@ -483,7 +483,7 @@ std::unordered_map<Network, ChainParams> g_chainParams;
  * @param network - Network id
  * @return Chain params
  */
-ChainParams& loadChainParam(Network network)
+ChainParams &loadChainParam(Network network)
 {
     auto itr = g_chainParams.find(network);
     if (itr != g_chainParams.end())
@@ -491,7 +491,8 @@ ChainParams& loadChainParam(Network network)
         return itr->second;
     }
 
-    auto [insertedItr, tookPlace] = g_chainParams.insert(std::make_pair(network, ChainParams(genesisInfo(network), genesisStateRoot(network))));
+    auto [insertedItr, tookPlace] =
+        g_chainParams.insert(std::make_pair(network, ChainParams(genesisInfo(network), genesisStateRoot(network))));
     return insertedItr->second;
 }
 
@@ -507,8 +508,7 @@ class EVMBinding
      * @param network - Network id
      */
     EVMBinding(void *db, Network network)
-        : m_db(DBFactory::create(db)), m_params(loadChainParam(network)),
-          m_engine(m_params.createSealEngine())
+        : m_db(DBFactory::create(db)), m_params(loadChainParam(network)), m_engine(m_params.createSealEngine())
     {
     }
 
@@ -645,7 +645,7 @@ class EVMBinding
     }
 
     OverlayDB m_db;
-    ChainParams& m_params;
+    ChainParams &m_params;
     std::unique_ptr<SealEngineFace> m_engine;
     std::shared_ptr<State> m_state;
 };
@@ -696,8 +696,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value chainID(const Napi::CallbackInfo &info)
     {
-        checkBinding(info);
-
         return Napi::Number::New(info.Env(), m_binding->chainID());
     }
 
@@ -708,8 +706,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value setHardfork(const Napi::CallbackInfo &info)
     {
-        checkBinding(info);
-
         m_binding->setHardfork(toString(info[0]));
 
         return info.Env().Undefined();
@@ -721,8 +717,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value resetHardfork(const Napi::CallbackInfo &info)
     {
-        checkBinding(info);
-
         m_binding->resetHardfork();
 
         return info.Env().Undefined();
@@ -737,8 +731,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value genesis(const Napi::CallbackInfo &info)
     {
-        checkBinding(info);
-
         Napi::Env env = info.Env();
 
         if (info.Length() != 2)
@@ -784,8 +776,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value runTx(const Napi::CallbackInfo &info)
     {
-        checkBinding(info);
-
         // parse input params
         auto params = parseRunParams(info);
 
@@ -813,8 +803,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      */
     Napi::Value runCall(const Napi::CallbackInfo &info)
     {
-        checkBinding(info);
-
         // parse input params
         auto params = parseRunParams(info);
 
@@ -827,18 +815,6 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
     }
 
   private:
-    /**
-     * Make sure the binding object exists
-     * @param info - Napi callback info
-     */
-    void checkBinding(const Napi::CallbackInfo &info)
-    {
-        if (m_binding.get() == nullptr)
-        {
-            Napi::TypeError::New(info.Env(), "Missing binding instance").ThrowAsJavaScriptException();
-        }
-    }
-
     /**
      * Parse napi value for vm.
      * @param info - Napi callback info
