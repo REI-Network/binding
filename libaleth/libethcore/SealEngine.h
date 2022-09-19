@@ -70,7 +70,9 @@ public:
 
     virtual bool isPrecompiled(Address const& _a, u256 const& _blockNumber) const
     {
-        return m_params.precompiled.count(_a) != 0 && _blockNumber >= m_params.precompiled.at(_a).startingBlock();
+        // return m_params.precompiled.count(_a) != 0 && _blockNumber >= m_params.precompiled.at(_a).startingBlock();
+        // use EVMSchedule
+        return m_params.precompiled.count(_a) != 0 && evmSchedule(_blockNumber).isSupportedPrecompiled(_a);
     }
     virtual bigint costOfPrecompiled(
         Address const& _a, bytesConstRef _in, u256 const& _blockNumber) const

@@ -8,6 +8,7 @@
 #include <libethcore/Common.h>
 #include <boost/optional.hpp>
 #include <array>
+#include <unordered_map>
 
 namespace dev
 {
@@ -84,6 +85,24 @@ struct EVMSchedule
     bool zeroValueTransferChargesNewAccountGas() const { return !eip158Mode; }
     bool sstoreNetGasMetering() const { return eip1283Mode || eip2200Mode; }
     bool sstoreThrowsIfGasBelowCallStipend() const { return eip2200Mode; }
+
+    std::unordered_map<Address, bool> supportedPrecompiled = {
+        { Address{0x1}, true }, // ecrecover
+        { Address{0x2}, true }, // sha256
+        { Address{0x3}, true }, // ripemd160
+        { Address{0x4}, true }, // identity
+        { Address{0x5}, false }, // modexp
+        { Address{0x6}, false }, // alt_bn128_G1_add
+        { Address{0x7}, false }, // alt_bn128_G1_mul
+        { Address{0x8}, false }, // alt_bn128_pairing_product
+        { Address{0x9}, false } // blake2_compression
+    };
+
+    bool isSupportedPrecompiled(const Address& addr) const
+    {
+        const auto itr = supportedPrecompiled.find(addr);
+        return itr != supportedPrecompiled.end() && itr->second;
+    }
 };
 
 static const EVMSchedule DefaultSchedule = EVMSchedule();
@@ -120,6 +139,10 @@ static const EVMSchedule ByzantiumSchedule = []
     schedule.haveReturnData = true;
     schedule.haveStaticCall = true;
     schedule.blockRewardOverwrite = {3 * ether};
+    schedule.supportedPrecompiled[Address{0x5}] = true;
+    schedule.supportedPrecompiled[Address{0x6}] = true;
+    schedule.supportedPrecompiled[Address{0x7}] = true;
+    schedule.supportedPrecompiled[Address{0x8}] = true;
     return schedule;
 }();
 
@@ -157,6 +180,7 @@ static const EVMSchedule IstanbulSchedule = [] {
     schedule.haveSelfbalance = true;
     schedule.eip2200Mode = true;
     schedule.sstoreUnchangedGas = 800;
+    schedule.supportedPrecompiled[Address{0x9}] = true;
     return schedule;
 }();
 
