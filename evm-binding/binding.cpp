@@ -365,7 +365,7 @@ h256s toH256s(const Napi::Value &value)
 
     for (std::size_t i = 0; i < array.Length(); i++)
     {
-        hashes.emplace_back(toBytesConstRef(array.Get(i)));
+        hashes.emplace_back(toH256(array.Get(i)));
     }
 
     return hashes;

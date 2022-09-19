@@ -2,7 +2,7 @@ module.exports = require("bindings")("evm-binding");
 
 export type JSEVMGlobalInit = () => void;
 
-export type LastBlockHashesLoader = () => string[];
+export type LastBlockHashesLoader = () => (string | Buffer)[];
 
 export type BlockHeader = {
   parentHash?: string | Buffer;
