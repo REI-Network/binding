@@ -139,8 +139,8 @@ evmc_tx_context EvmCHost::get_tx_context() const noexcept
     result.block_timestamp = envInfo.timestamp();
     result.block_gas_limit = static_cast<int64_t>(envInfo.gasLimit());
     result.chain_id = toEvmC(envInfo.chainID());
+    result.block_prev_randao = toEvmC(envInfo.difficulty());
     // TODO:
-    // reslt.block_prev_randao
     // result.block_base_fee
     return result;
 }
