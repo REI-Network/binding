@@ -176,18 +176,29 @@ void SealEngineBase::setEvmSchedule(const std::string& _hardfork)
     {
         m_forceSchedule = &HomesteadSchedule;
     }
+    else if (_hardfork == "tangerineWhistle")
+    {
+        m_forceSchedule = &EIP150Schedule;
+    }
     else if (_hardfork == "byzantium")
     {
         m_forceSchedule = &ByzantiumSchedule;
     }
     else if (_hardfork == "constantinople")
     {
-        // TODO: ConstantinopleFixSchedule??
         m_forceSchedule = &ConstantinopleSchedule;
+    }
+    else if (_hardfork == "constantinopleFix" || _hardfork == "petersburg")
+    {
+        m_forceSchedule = &ConstantinopleFixSchedule;
     }
     else if (_hardfork == "istanbul")
     {
         m_forceSchedule = &IstanbulSchedule;
+    }
+    else if (_hardfork == "spuriousDragon")
+    {
+        m_forceSchedule = &EIP158Schedule;
     }
     else if (_hardfork == "muirGlacier")
     {
