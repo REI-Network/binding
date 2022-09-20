@@ -56,8 +56,8 @@ add_library(
     # SnapshotImporter.h
     # SnapshotStorage.cpp
     # SnapshotStorage.h
-    StandardTrace.cpp
-    StandardTrace.h
+    # StandardTrace.cpp
+    # StandardTrace.h
     State.cpp
     State.h
     StateImporter.cpp

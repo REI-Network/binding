@@ -58,7 +58,7 @@ EVMC::EVMC(evmc_vm* _vm, std::vector<std::pair<std::string, std::string>> const&
     }
 }
 
-owning_bytes_ref EVMC::exec(u256& io_gas, ExtVMFace& _ext, const OnOpFunc& _onOp)
+ExecResult EVMC::exec(u256& io_gas, ExtVMFace& _ext, const OnOpFunc& _onOp)
 {
     assert(_ext.envInfo().number() >= 0);
     assert(_ext.envInfo().timestamp() >= 0);
@@ -90,10 +90,12 @@ owning_bytes_ref EVMC::exec(u256& io_gas, ExtVMFace& _ext, const OnOpFunc& _onOp
     {
     case EVMC_SUCCESS:
         io_gas = r.gas_left;
-        return output;
+        // _ext.sub.refunds = r.gas_refund;
+        return ExecResult{std::move(output), r.gas_refund};
 
     case EVMC_REVERT:
         io_gas = r.gas_left;
+        // _ext.sub.refunds = r.gas_refund;
         throw RevertInstruction{std::move(output)};
 
     case EVMC_OUT_OF_GAS:

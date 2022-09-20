@@ -3,10 +3,10 @@ set(sources
     EVMC.cpp EVMC.h
     ExtVMFace.cpp ExtVMFace.h
     Instruction.cpp Instruction.h
-    LegacyVM.cpp LegacyVM.h
-    LegacyVMConfig.h
-    LegacyVMCalls.cpp
-    LegacyVMOpt.cpp
+    # LegacyVM.cpp LegacyVM.h
+    # LegacyVMConfig.h
+    # LegacyVMCalls.cpp
+    # LegacyVMOpt.cpp
     VMFace.h
     VMFactory.cpp VMFactory.h
 )

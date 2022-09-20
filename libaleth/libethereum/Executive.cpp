@@ -7,11 +7,11 @@
 #include "BlockChain.h"
 #include "ExtVM.h"
 #include "Interface.h"
-#include "StandardTrace.h"
+// #include "StandardTrace.h"
 #include "State.h"
 #include <libdevcore/CommonIO.h>
 #include <libethcore/CommonJS.h>
-#include <libevm/LegacyVM.h>
+// #include <libevm/LegacyVM.h>
 #include <libevm/VMFactory.h>
 
 using namespace std;
@@ -22,17 +22,17 @@ namespace
 {
 Address const c_RipemdPrecompiledAddress{0x03};
 
-std::string dumpStackAndMemory(LegacyVM const& _vm)
-{
-    ostringstream o;
-    o << "\n    STACK\n";
-    for (auto i : _vm.stack())
-        o << (h256)i << "\n";
-    o << "    MEMORY\n"
-      << ((_vm.memory().size() > 1000) ? " mem size greater than 1000 bytes " :
-                                         memDump(_vm.memory()));
-    return o.str();
-};
+// std::string dumpStackAndMemory(LegacyVM const& _vm)
+// {
+//     ostringstream o;
+//     o << "\n    STACK\n";
+//     for (auto i : _vm.stack())
+//         o << (h256)i << "\n";
+//     o << "    MEMORY\n"
+//       << ((_vm.memory().size() > 1000) ? " mem size greater than 1000 bytes " :
+//                                          memDump(_vm.memory()));
+//     return o.str();
+// };
 
 std::string dumpStorage(ExtVM const& _ext)
 {
@@ -323,10 +323,10 @@ OnOpFunc Executive::simpleTrace()
     return [&traceLogger](uint64_t steps, uint64_t PC, Instruction inst, bigint newMemSize,
                bigint gasCost, bigint gas, VMFace const* _vm, ExtVMFace const* voidExt) {
         ExtVM const& ext = *static_cast<ExtVM const*>(voidExt);
-        auto vm = dynamic_cast<LegacyVM const*>(_vm);
+        // auto vm = dynamic_cast<LegacyVM const*>(_vm);
 
-        if (vm)
-            LOG(traceLogger) << dumpStackAndMemory(*vm);
+        // if (vm)
+        //     LOG(traceLogger) << dumpStackAndMemory(*vm);
         LOG(traceLogger) << dumpStorage(ext);
         LOG(traceLogger) << " < " << dec << ext.depth << " : " << ext.myAddress << " : #" << steps
                          << " : " << hex << setw(4) << setfill('0') << PC << " : "
@@ -349,19 +349,20 @@ bool Executive::go(OnOpFunc const& _onOp)
             auto vm = VMFactory::create();
             if (m_isCreation)
             {
-                auto out = vm->exec(m_gas, *m_ext, _onOp);
+                auto result = vm->exec(m_gas, *m_ext, _onOp);
+                // m_ext->sub.refunds += result.gasRefund;
                 if (m_res)
                 {
                     m_res->gasForDeposit = m_gas;
-                    m_res->depositSize = out.size();
+                    m_res->depositSize = result.output.size();
                 }
-                if (out.size() > m_ext->evmSchedule().maxCodeSize)
+                if (result.output.size() > m_ext->evmSchedule().maxCodeSize)
                     BOOST_THROW_EXCEPTION(OutOfGas());
-                else if (out.size() * m_ext->evmSchedule().createDataGas <= m_gas)
+                else if (result.output.size() * m_ext->evmSchedule().createDataGas <= m_gas)
                 {
                     if (m_res)
                         m_res->codeDeposit = CodeDeposit::Success;
-                    m_gas -= out.size() * m_ext->evmSchedule().createDataGas;
+                    m_gas -= result.output.size() * m_ext->evmSchedule().createDataGas;
                 }
                 else
                 {
@@ -371,15 +372,19 @@ bool Executive::go(OnOpFunc const& _onOp)
                     {
                         if (m_res)
                             m_res->codeDeposit = CodeDeposit::Failed;
-                        out = {};
+                        result.output = {};
                     }
                 }
                 if (m_res)
-                    m_res->output = out.toVector(); // copy output to execution result
-                m_s.setCode(m_ext->myAddress, out.toVector(), m_ext->version);
+                    m_res->output = result.output.toVector(); // copy output to execution result
+                m_s.setCode(m_ext->myAddress, result.output.toVector(), m_ext->version);
             }
             else
-                m_output = vm->exec(m_gas, *m_ext, _onOp);
+            {
+                auto result = vm->exec(m_gas, *m_ext, _onOp);
+                m_output = std::move(result.output);
+                // m_ext->sub.refunds += result.gasRefund;
+            }
         }
         catch (RevertInstruction& _e)
         {

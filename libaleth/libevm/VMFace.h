@@ -46,6 +46,11 @@ private:
 	owning_bytes_ref m_output;
 };
 
+struct ExecResult
+{
+	owning_bytes_ref output;
+	int64_t gasRefund;
+};
 
 /// EVM Virtual Machine interface
 class VMFace
@@ -57,7 +62,7 @@ public:
 	VMFace& operator=(VMFace const&) = delete;
 
 	/// VM implementation
-	virtual owning_bytes_ref exec(u256& io_gas, ExtVMFace& _ext, OnOpFunc const& _onOp) = 0;
+	virtual ExecResult exec(u256& io_gas, ExtVMFace& _ext, OnOpFunc const& _onOp) = 0;
 };
 
 /// Helpers:

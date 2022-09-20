@@ -43,32 +43,68 @@ evmc_storage_status EvmCHost::set_storage(
     EVMSchedule const& schedule = m_extVM.evmSchedule();
     auto status = EVMC_STORAGE_MODIFIED;
     u256 const originalValue = m_extVM.originalStorageValue(index);
-    if (originalValue == currentValue || !schedule.sstoreNetGasMetering())
+    if (schedule.sstoreNetGasMetering())
     {
-        if (currentValue == 0)
-            status = EVMC_STORAGE_ADDED;
-        else if (newValue == 0)
+        // catch all remaining status
+        status = EVMC_STORAGE_ASSIGNED;
+
+        if (originalValue == currentValue)
         {
-            status = EVMC_STORAGE_DELETED;
-            m_extVM.sub.refunds += schedule.sstoreRefundGas;
+            if (originalValue == 0)
+                status = EVMC_STORAGE_ADDED;
+            else if (newValue == 0)
+                status = EVMC_STORAGE_DELETED;
+            else
+                status = EVMC_STORAGE_MODIFIED;
+        }
+        else if (originalValue != 0)
+        {
+            if (currentValue == 0)
+                if (originalValue == newValue)
+                    status = EVMC_STORAGE_DELETED_RESTORED;
+                else
+                    status = EVMC_STORAGE_DELETED_ADDED;
+            else
+                if (originalValue == newValue)
+                    status = EVMC_STORAGE_MODIFIED_RESTORED;
+                else if (newValue == 0)
+                    status = EVMC_STORAGE_MODIFIED_DELETED;
+        }
+        else
+        {
+            if (newValue == 0)
+                status = EVMC_STORAGE_ADDED_DELETED;
         }
     }
     else
     {
-        status = EVMC_STORAGE_MODIFIED;
-        if (originalValue != 0)
+        if (originalValue == currentValue)
         {
             if (currentValue == 0)
-                m_extVM.sub.refunds -= schedule.sstoreRefundGas;  // Can go negative.
-            if (newValue == 0)
-                m_extVM.sub.refunds += schedule.sstoreRefundGas;
+                status = EVMC_STORAGE_ADDED;
+            else if (newValue == 0)
+            {
+                status = EVMC_STORAGE_DELETED;
+                // m_extVM.sub.refunds += schedule.sstoreRefundGas;
+            }
         }
-        if (originalValue == newValue)
+        else
         {
-            if (originalValue == 0)
-                m_extVM.sub.refunds += schedule.sstoreSetGas - schedule.sstoreUnchangedGas;
-            else
-                m_extVM.sub.refunds += schedule.sstoreResetGas - schedule.sstoreUnchangedGas;
+            status = EVMC_STORAGE_MODIFIED;
+            if (originalValue != 0)
+            {
+                // if (currentValue == 0)
+                //     m_extVM.sub.refunds -= schedule.sstoreRefundGas;  // Can go negative.
+                // if (newValue == 0)
+                //     m_extVM.sub.refunds += schedule.sstoreRefundGas;
+            }
+            if (originalValue == newValue)
+            {
+                // if (originalValue == 0)
+                //     m_extVM.sub.refunds += schedule.sstoreSetGas - schedule.sstoreUnchangedGas;
+                // else
+                //     m_extVM.sub.refunds += schedule.sstoreResetGas - schedule.sstoreUnchangedGas;
+            }
         }
     }
 
