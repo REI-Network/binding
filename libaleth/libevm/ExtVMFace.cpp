@@ -53,7 +53,10 @@ evmc_storage_status EvmCHost::set_storage(
             if (originalValue == 0)
                 status = EVMC_STORAGE_ADDED;
             else if (newValue == 0)
+            {
                 status = EVMC_STORAGE_DELETED;
+                m_extVM.sub.refunds += schedule.sstoreRefundGas;
+            }
             else
                 status = EVMC_STORAGE_MODIFIED;
         }
@@ -61,19 +64,34 @@ evmc_storage_status EvmCHost::set_storage(
         {
             if (currentValue == 0)
                 if (originalValue == newValue)
+                {
                     status = EVMC_STORAGE_DELETED_RESTORED;
+                    m_extVM.sub.refunds += schedule.sstoreResetGas - schedule.sstoreUnchangedGas - schedule.sstoreRefundGas;
+                }
                 else
+                {
                     status = EVMC_STORAGE_DELETED_ADDED;
+                    m_extVM.sub.refunds -= schedule.sstoreRefundGas;
+                }
             else
                 if (originalValue == newValue)
+                {
                     status = EVMC_STORAGE_MODIFIED_RESTORED;
+                    m_extVM.sub.refunds += schedule.sstoreResetGas - schedule.sstoreUnchangedGas;
+                }
                 else if (newValue == 0)
+                {
                     status = EVMC_STORAGE_MODIFIED_DELETED;
+                    m_extVM.sub.refunds += schedule.sstoreRefundGas;
+                }
         }
         else
         {
             if (newValue == 0)
+            {
                 status = EVMC_STORAGE_ADDED_DELETED;
+                m_extVM.sub.refunds += schedule.sstoreSetGas - schedule.sstoreUnchangedGas;
+            }
         }
     }
     else
