@@ -350,7 +350,6 @@ bool Executive::go(OnOpFunc const& _onOp)
             if (m_isCreation)
             {
                 auto result = vm->exec(m_gas, *m_ext, _onOp);
-                // m_ext->sub.refunds += result.gasRefund;
                 if (m_res)
                 {
                     m_res->gasForDeposit = m_gas;
@@ -383,7 +382,6 @@ bool Executive::go(OnOpFunc const& _onOp)
             {
                 auto result = vm->exec(m_gas, *m_ext, _onOp);
                 m_output = std::move(result.output);
-                // m_ext->sub.refunds += result.gasRefund;
             }
         }
         catch (RevertInstruction& _e)

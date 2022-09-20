@@ -43,40 +43,40 @@ evmc_storage_status EvmCHost::set_storage(
     EVMSchedule const& schedule = m_extVM.evmSchedule();
     auto status = EVMC_STORAGE_MODIFIED;
     u256 const originalValue = m_extVM.originalStorageValue(index);
-    // if (schedule.sstoreNetGasMetering())
-    // {
-    //     // catch all remaining status
-    //     status = EVMC_STORAGE_ASSIGNED;
+    if (schedule.sstoreNetGasMetering())
+    {   
+        // catch all remaining status
+        status = EVMC_STORAGE_ASSIGNED;
 
-    //     if (originalValue == currentValue)
-    //     {
-    //         if (originalValue == 0)
-    //             status = EVMC_STORAGE_ADDED;
-    //         else if (newValue == 0)
-    //             status = EVMC_STORAGE_DELETED;
-    //         else
-    //             status = EVMC_STORAGE_MODIFIED;
-    //     }
-    //     else if (originalValue != 0)
-    //     {
-    //         if (currentValue == 0)
-    //             if (originalValue == newValue)
-    //                 status = EVMC_STORAGE_DELETED_RESTORED;
-    //             else
-    //                 status = EVMC_STORAGE_DELETED_ADDED;
-    //         else
-    //             if (originalValue == newValue)
-    //                 status = EVMC_STORAGE_MODIFIED_RESTORED;
-    //             else if (newValue == 0)
-    //                 status = EVMC_STORAGE_MODIFIED_DELETED;
-    //     }
-    //     else
-    //     {
-    //         if (newValue == 0)
-    //             status = EVMC_STORAGE_ADDED_DELETED;
-    //     }
-    // }
-    // else
+        if (originalValue == currentValue)
+        {
+            if (originalValue == 0)
+                status = EVMC_STORAGE_ADDED;
+            else if (newValue == 0)
+                status = EVMC_STORAGE_DELETED;
+            else
+                status = EVMC_STORAGE_MODIFIED;
+        }
+        else if (originalValue != 0)
+        {
+            if (currentValue == 0)
+                if (originalValue == newValue)
+                    status = EVMC_STORAGE_DELETED_RESTORED;
+                else
+                    status = EVMC_STORAGE_DELETED_ADDED;
+            else
+                if (originalValue == newValue)
+                    status = EVMC_STORAGE_MODIFIED_RESTORED;
+                else if (newValue == 0)
+                    status = EVMC_STORAGE_MODIFIED_DELETED;
+        }
+        else
+        {
+            if (newValue == 0)
+                status = EVMC_STORAGE_ADDED_DELETED;
+        }
+    }
+    else
     {
         if (originalValue == currentValue || !schedule.sstoreNetGasMetering())
         {
@@ -201,9 +201,7 @@ evmc::Result EvmCHost::create(evmc_message const& _msg) noexcept
     evmc_result evmcResult = {};
     evmcResult.status_code = result.status;
     evmcResult.gas_left = static_cast<int64_t>(gas);
-
-    // TODO:
-    // evmcResult.gas_refund
+    evmcResult.gas_refund = m_extVM.sub.refunds;
 
     if (result.status == EVMC_SUCCESS)
         evmcResult.create_address = toEvmC(result.address);
@@ -257,9 +255,7 @@ evmc::Result EvmCHost::call(evmc_message const& _msg) noexcept
     evmc_result evmcResult = {};
     evmcResult.status_code = result.status;
     evmcResult.gas_left = static_cast<int64_t>(params.gas);
-
-    // TODO:
-    // evmcResult.gas_refund
+    evmcResult.gas_refund = m_extVM.sub.refunds;
 
     // Pass the output to the EVM without a copy. The EVM will delete it
     // when finished with it.
