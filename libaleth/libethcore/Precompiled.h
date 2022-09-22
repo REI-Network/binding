@@ -9,6 +9,7 @@
 #include <functional>
 #include <libdevcore/CommonData.h>
 #include <libdevcore/Exceptions.h>
+#include <libethcore/EVMSchedule.h>
 
 namespace dev
 {
@@ -18,7 +19,7 @@ struct ChainOperationParams;
 
 using PrecompiledExecutor = std::function<std::pair<bool, bytes>(bytesConstRef _in)>;
 using PrecompiledPricer = std::function<bigint(
-    bytesConstRef _in, ChainOperationParams const& _chainParams, u256 const& _blockNumber)>;
+    bytesConstRef _in, EVMSchedule const& _schedule, u256 const& _blockNumber)>;
 
 DEV_SIMPLE_EXCEPTION(ExecutorNotFound);
 DEV_SIMPLE_EXCEPTION(PricerNotFound);
@@ -54,7 +55,7 @@ private:
 #define ETH_REGISTER_PRECOMPILED(Name) static std::pair<bool, bytes> __eth_registerPrecompiledFunction ## Name(bytesConstRef _in); static PrecompiledExecutor __eth_registerPrecompiledFactory ## Name = ::dev::eth::PrecompiledRegistrar::registerExecutor(#Name, &__eth_registerPrecompiledFunction ## Name); static std::pair<bool, bytes> __eth_registerPrecompiledFunction ## Name
 #define ETH_REGISTER_PRECOMPILED_PRICER(Name)                                                   \
     static bigint __eth_registerPricerFunction##Name(                                           \
-        bytesConstRef _in, ChainOperationParams const& _chainParams, u256 const& _blockNumber); \
+        bytesConstRef _in, EVMSchedule const& _schedule, u256 const& _blockNumber); \
     static PrecompiledPricer __eth_registerPricerFactory##Name =                                \
         ::dev::eth::PrecompiledRegistrar::registerPricer(                                       \
             #Name, &__eth_registerPricerFunction##Name);                                        \

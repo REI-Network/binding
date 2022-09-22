@@ -77,7 +77,7 @@ public:
     virtual bigint costOfPrecompiled(
         Address const& _a, bytesConstRef _in, u256 const& _blockNumber) const
     {
-        return m_params.precompiled.at(_a).cost(_in, m_params, _blockNumber);
+        return m_params.precompiled.at(_a).cost(_in, evmSchedule(_blockNumber), _blockNumber);
     }
     virtual std::pair<bool, bytes> executePrecompiled(Address const& _a, bytesConstRef _in, u256 const&) const { return m_params.precompiled.at(_a).execute(_in); }
 

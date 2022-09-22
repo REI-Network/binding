@@ -23,9 +23,9 @@ public:
     PrecompiledContract(std::string const& _name, u256 const& _startingBlock = 0);
 
     bigint cost(
-        bytesConstRef _in, ChainOperationParams const& _chainParams, u256 const& _blockNumber) const
+        bytesConstRef _in, EVMSchedule const& _schedule, u256 const& _blockNumber) const
     {
-        return m_cost(_in, _chainParams, _blockNumber);
+        return m_cost(_in, _schedule, _blockNumber);
     }
     std::pair<bool, bytes> execute(bytesConstRef _in) const { return m_execute(_in); }
 

@@ -43,7 +43,7 @@ bigint linearPricer(unsigned _base, unsigned _word, bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(ecrecover)
-(bytesConstRef /*_in*/, ChainOperationParams const& /*_chainParams*/, u256 const& /*_blockNumber*/)
+(bytesConstRef /*_in*/, EVMSchedule const& /*_schedule*/, u256 const& /*_blockNumber*/)
 {
     return 3000;
 }
@@ -83,7 +83,7 @@ ETH_REGISTER_PRECOMPILED(ecrecover)(bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(sha256)
-(bytesConstRef _in, ChainOperationParams const& /*_chainParams*/, u256 const& /*_blockNumber*/)
+(bytesConstRef _in, EVMSchedule const& /*_schedule*/, u256 const& /*_blockNumber*/)
 {
     return linearPricer(60, 12, _in);
 }
@@ -94,7 +94,7 @@ ETH_REGISTER_PRECOMPILED(sha256)(bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(ripemd160)
-(bytesConstRef _in, ChainOperationParams const& /*_chainParams*/, u256 const& /*_blockNumber*/)
+(bytesConstRef _in, EVMSchedule const& /*_schedule*/, u256 const& /*_blockNumber*/)
 {
     return linearPricer(600, 120, _in);
 }
@@ -105,7 +105,7 @@ ETH_REGISTER_PRECOMPILED(ripemd160)(bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(identity)
-(bytesConstRef _in, ChainOperationParams const& /*_chainParams*/, u256 const& /*_blockNumber*/)
+(bytesConstRef _in, EVMSchedule const& /*_schedule*/, u256 const& /*_blockNumber*/)
 {
     return linearPricer(15, 3, _in);
 }
@@ -189,7 +189,7 @@ namespace
     }
 }
 
-ETH_REGISTER_PRECOMPILED_PRICER(modexp)(bytesConstRef _in, ChainOperationParams const&, u256 const&)
+ETH_REGISTER_PRECOMPILED_PRICER(modexp)(bytesConstRef _in, EVMSchedule const&, u256 const&)
 {
     bigint const baseLength(parseBigEndianRightPadded(_in, 0, 32));
     bigint const expLength(parseBigEndianRightPadded(_in, 32, 32));
@@ -207,9 +207,10 @@ ETH_REGISTER_PRECOMPILED(alt_bn128_G1_add)(bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(alt_bn128_G1_add)
-(bytesConstRef /*_in*/, ChainOperationParams const& _chainParams, u256 const& _blockNumber)
+(bytesConstRef /*_in*/, EVMSchedule const& _schedule, u256 const& /*_blockNumber*/)
 {
-    return _blockNumber < _chainParams.istanbulForkBlock ? 500 : 150;
+    // TODO: haveChainID is confusing
+    return _schedule.haveChainID ? 150 : 500;
 }
 
 ETH_REGISTER_PRECOMPILED(alt_bn128_G1_mul)(bytesConstRef _in)
@@ -218,9 +219,10 @@ ETH_REGISTER_PRECOMPILED(alt_bn128_G1_mul)(bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(alt_bn128_G1_mul)
-(bytesConstRef /*_in*/, ChainOperationParams const& _chainParams, u256 const& _blockNumber)
+(bytesConstRef /*_in*/, EVMSchedule const& _schedule, u256 const& /*_blockNumber*/)
 {
-    return _blockNumber < _chainParams.istanbulForkBlock ? 40000 : 6000;
+    // TODO: haveChainID is confusing
+    return _schedule.haveChainID ? 6000 : 40000;
 }
 
 ETH_REGISTER_PRECOMPILED(alt_bn128_pairing_product)(bytesConstRef _in)
@@ -229,10 +231,11 @@ ETH_REGISTER_PRECOMPILED(alt_bn128_pairing_product)(bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(alt_bn128_pairing_product)
-(bytesConstRef _in, ChainOperationParams const& _chainParams, u256 const& _blockNumber)
+(bytesConstRef _in, EVMSchedule const& _schedule, u256 const& /*_blockNumber*/)
 {
     auto const k = _in.size() / 192;
-    return _blockNumber < _chainParams.istanbulForkBlock ? 100000 + k * 80000 : 45000 + k * 34000;
+    // TODO: haveChainID is confusing
+    return _schedule.haveChainID ? 45000 + k * 34000 : 100000 + k * 80000;
 }
 
 ETH_REGISTER_PRECOMPILED(blake2_compression)(bytesConstRef _in)
@@ -266,7 +269,7 @@ ETH_REGISTER_PRECOMPILED(blake2_compression)(bytesConstRef _in)
 }
 
 ETH_REGISTER_PRECOMPILED_PRICER(blake2_compression)
-(bytesConstRef _in, ChainOperationParams const&, u256 const&)
+(bytesConstRef _in, EVMSchedule const&, u256 const&)
 {
     auto const rounds = fromBigEndian<uint32_t>(_in.cropped(0, 4));
     return rounds;
