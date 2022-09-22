@@ -29,6 +29,7 @@ struct EVMSchedule
     bool eip158Mode = false;
     bool eip1283Mode = false;
     bool eip2200Mode = false;
+    bool eip2565Mode = false;
     bool eip2681Mode = true;
     bool eip3607Mode = true;
     bool haveBitwiseShifting = false;
@@ -188,6 +189,7 @@ static const EVMSchedule& MuirGlacierSchedule = IstanbulSchedule;
 
 static const EVMSchedule BerlinSchedule = [] {
     EVMSchedule schedule = MuirGlacierSchedule;
+    schedule.eip2565Mode = true;
     return schedule;
 }();
 

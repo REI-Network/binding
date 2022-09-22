@@ -187,9 +187,16 @@ namespace
         else
             return (_x * _x) / 16 + 480 * _x - 199680;
     }
+
+    bigint multComplexityEIP2565(bigint const& _x)
+    {
+        auto words = (_x + 7) / 8;
+        return words * words;
+    }
+
 }
 
-ETH_REGISTER_PRECOMPILED_PRICER(modexp)(bytesConstRef _in, EVMSchedule const&, u256 const&)
+ETH_REGISTER_PRECOMPILED_PRICER(modexp)(bytesConstRef _in, EVMSchedule const& _schedule, u256 const&)
 {
     bigint const baseLength(parseBigEndianRightPadded(_in, 0, 32));
     bigint const expLength(parseBigEndianRightPadded(_in, 32, 32));
@@ -198,7 +205,15 @@ ETH_REGISTER_PRECOMPILED_PRICER(modexp)(bytesConstRef _in, EVMSchedule const&, u
     bigint const maxLength(max(modLength, baseLength));
     bigint const adjustedExpLength(expLengthAdjust(baseLength + 96, expLength, _in));
 
-    return multComplexity(maxLength) * max<bigint>(adjustedExpLength, 1) / 20;
+    if (!_schedule.eip2565Mode)
+        return multComplexity(maxLength) * max<bigint>(adjustedExpLength, 1) / 20;
+    else
+    {
+        auto cost = multComplexityEIP2565(maxLength) * max<bigint>(adjustedExpLength, 1) / 3;
+        if (cost < 200)
+            cost = 200;
+        return cost;
+    }
 }
 
 ETH_REGISTER_PRECOMPILED(alt_bn128_G1_add)(bytesConstRef _in)
