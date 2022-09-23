@@ -294,15 +294,24 @@ void TransactionBase::checkChainId(uint64_t _chainId) const
         BOOST_THROW_EXCEPTION(InvalidSignature());
 }
 
-int64_t TransactionBase::baseGasRequired(bool _contractCreation, bytesConstRef _data, EVMSchedule const& _es)
+int64_t TransactionBase::baseGasRequired(EVMSchedule const& _es) const
 {
-    int64_t g = _contractCreation ? _es.txCreateGas : _es.txGas;
+    int64_t g = isCreation() ? _es.txCreateGas : _es.txGas;
 
     // Calculate the cost of input data.
     // No risk of overflow by using int64 as long as txDataNonZeroGas is quite small
     // (the value not in billions).
-    for (auto i: _data)
+    for (auto i: m_data)
         g += i ? _es.txDataNonZeroGas : _es.txDataZeroGas;
+
+    if (m_txType == TransactionType::AccessListEIP2930)
+    {
+        if (!m_accessList.has_value())
+            BOOST_THROW_EXCEPTION(InvalidAccessList() << errinfo_comment("missing access list"));
+            
+        g += m_accessList->calculateBaseGas(_es);
+    }
+
     return g;
 }
 

@@ -151,10 +151,7 @@ public:
     void sign(Secret const& _priv);			///< Sign the transaction.
 
     /// @returns amount of gas required for the basic payment.
-    int64_t baseGasRequired(EVMSchedule const& _es) const { return baseGasRequired(isCreation(), &m_data, _es); }
-
-    /// Get the fee associated for a transaction with the given data.
-    static int64_t baseGasRequired(bool _contractCreation, bytesConstRef _data, EVMSchedule const& _es);
+    int64_t baseGasRequired(EVMSchedule const& _es) const;
 
 protected:
     /// Type of transaction.

@@ -17,7 +17,7 @@ class AccessList
   public:
     AccessList(RLP const &_rlp);
 
-    int64_t calculateBaseGas(EVMSchedule const &_schedule);
+    int64_t calculateBaseGas(EVMSchedule const &_schedule) const;
 
     void streamRLP(RLPStream& _s) const;
 

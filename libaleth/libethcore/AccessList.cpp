@@ -40,7 +40,7 @@ AccessList::AccessList(RLP const &_rlp): m_keys(0)
     }
 }
 
-int64_t AccessList::calculateBaseGas(EVMSchedule const &_schedule)
+int64_t AccessList::calculateBaseGas(EVMSchedule const &_schedule) const
 {
     return _schedule.accessListAddressCost * list.size() + _schedule.accessListStroageKeyCost * m_keys;
 }
