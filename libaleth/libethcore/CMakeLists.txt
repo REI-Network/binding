@@ -1,5 +1,7 @@
 add_library(
     ethcore
+    AccessList.h
+    AccessList.cpp
     BasicAuthority.cpp
     BasicAuthority.h
     BlockHeader.cpp

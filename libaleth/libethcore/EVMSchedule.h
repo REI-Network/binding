@@ -70,6 +70,8 @@ struct EVMSchedule
     unsigned txDataZeroGas = 4;
     unsigned txDataNonZeroGas = 68;
     unsigned copyGas = 3;
+    unsigned accessListStroageKeyCost = 1900;
+    unsigned accessListAddressCost = 2400;
 
     unsigned extcodesizeGas = 20;
     unsigned extcodecopyGas = 20;
