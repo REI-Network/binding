@@ -29,6 +29,76 @@ TransactionBase::TransactionBase(TransactionSkeleton const& _ts, Secret const& _
 
 TransactionBase::TransactionBase(bytesConstRef _rlpData, CheckTransaction _checkSig)
 {
+    if (_rlpData.size() == 0)
+        BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("RLP data is empty"));
+
+    // EIP-2718 typed transaction logic
+    auto firstByte = _rlpData[0];
+    if (firstByte < 0x7f)
+    {
+        RLP const rlp(_rlpData.data() + 1, _rlpData.size() - 1);
+        try
+        {
+            // Currently only supports AccessListEIP2930 transaction
+            if (firstByte != (byte)TransactionType::AccessListEIP2930)
+                BOOST_THROW_EXCEPTION(InvalidTransactionType());
+
+            if (!rlp.isList())
+                BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("transaction RLP must be a list"));
+
+            m_chainId = rlp[0].toInt<uint64_t>();
+            m_nonce = rlp[1].toInt<u256>();
+            m_gasPrice = rlp[2].toInt<u256>();
+            m_gas = rlp[3].toInt<u256>();
+            if (!rlp[4].isData())
+                BOOST_THROW_EXCEPTION(InvalidTransactionFormat()
+                                    << errinfo_comment("recepient RLP must be a byte array"));
+            m_type = rlp[4].isEmpty() ? ContractCreation : MessageCall;
+            m_receiveAddress = rlp[4].isEmpty() ? Address() : rlp[4].toHash<Address>(RLP::VeryStrict);
+            m_value = rlp[5].toInt<u256>();
+
+            if (!rlp[6].isData())
+                BOOST_THROW_EXCEPTION(InvalidTransactionFormat()
+                                    << errinfo_comment("transaction data RLP must be a byte array"));
+
+            m_data = rlp[6].toBytes();
+
+            m_accessList = AccessList(rlp[7]);
+
+            u256 const v = rlp[8].toInt<u256>();
+            h256 const r = rlp[9].toInt<u256>();
+            h256 const s = rlp[10].toInt<u256>();
+
+            if (isZeroSignature(r, s))
+            {
+                m_chainId = static_cast<uint64_t>(v);
+                m_vrs = SignatureStruct{r, s, 0};
+            }
+            else
+            {
+                if (v != 0 && v != 1)
+                    BOOST_THROW_EXCEPTION(InvalidSignature());
+
+                m_vrs = SignatureStruct{r, s, byte{v}};
+
+                if (_checkSig >= CheckTransaction::Cheap && !m_vrs->isValid())
+                    BOOST_THROW_EXCEPTION(InvalidSignature());
+            }
+
+            if (_checkSig == CheckTransaction::Everything)
+                m_sender = sender();
+
+            if (rlp.itemCount() > 11)
+                BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("too many fields in the transaction RLP"));
+        }
+        catch (Exception& _e)
+        {
+            _e << errinfo_name("invalid typed transaction:" + toString(firstByte) + " format: " + toString(rlp) + " RLP: " + toHex(rlp.data()));
+            throw;
+        }
+        return;
+    }
+
     RLP const rlp(_rlpData);
     try
     {

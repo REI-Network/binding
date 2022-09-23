@@ -5,6 +5,7 @@
 #pragma once
 
 #include <libethcore/Common.h>
+#include <libethcore/AccessList.h>
 #include <libdevcrypto/Common.h>
 #include <libdevcore/RLP.h>
 #include <libdevcore/SHA3.h>
@@ -30,6 +31,12 @@ enum class CheckTransaction
     None,
     Cheap,
     Everything
+};
+
+enum class TransactionType
+{
+    Legacy,
+    AccessListEIP2930
 };
 
 /// Encodes a transaction, ready to be exported to or freshly imported from RLP.
@@ -163,6 +170,7 @@ protected:
     /// Clears the signature.
     void clearSignature() { m_vrs = SignatureStruct(); }
 
+    TransactionType m_txType = TransactionType::Legacy; ///< EIP2718 typed transaction.
     Type m_type = NullTransaction;		///< Is this a contract-creation transaction or a message-call transaction?
     u256 m_nonce;						///< The transaction-count of the sender.
     u256 m_value;						///< The amount of ETH to be transferred by this transaction. Called 'endowment' for contract-creation transactions.
@@ -174,6 +182,7 @@ protected:
     /// EIP155 value for calculating transaction hash
     /// https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
     boost::optional<uint64_t> m_chainId;
+    boost::optional<AccessList> m_accessList; ///< The access list of EIP-2930 transaction.
 
     mutable h256 m_hashWith;			///< Cached hash of transaction with signature.
     mutable boost::optional<Address> m_sender;  ///< Cached sender, determined from signature.
