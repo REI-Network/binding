@@ -618,6 +618,26 @@ void State::rollback(size_t _savepoint)
             account.untouch();
             m_unchangedCacheEntries.emplace_back(change.address);
             break;
+        case Change::WarmedAddress:
+            {
+                auto itr = m_warmed.find(change.address);
+                assert(itr != m_warmed.end() && itr->second.empty());
+                m_warmed.erase(itr);
+                break;
+            }
+        case Change::WarmedStorage:
+            {
+                auto itr = m_warmed.find(change.address);
+                assert(itr != m_warmed.end() && itr->second.erase(change.key) == 1);
+                break;
+            }
+        case Change::WarmedAddressAndStorage:
+            {
+                auto itr = m_warmed.find(change.address);
+                assert(itr != m_warmed.end() && itr->second.erase(change.key) == 1 && itr->second.empty());
+                m_warmed.erase(itr);
+                break;
+            }
         }
         m_changeLog.pop_back();
     }
@@ -693,6 +713,50 @@ bool State::executeTransaction(Executive& _e, Transaction const& _t, OnOpFunc co
         rollback(savept);
         throw;
     }
+}
+
+bool State::accessAddress(Address const& _addr)
+{
+    auto isWarmed = isWarmedAddress(_addr);
+    if (!isWarmed)
+        addWarmedAddress(_addr);
+    return isWarmed;
+}
+
+bool State::accessStorage(Address const& _addr, u256 const& _key)
+{
+    auto isWarmed = isWarmedStorage(_addr, _key);
+    if (!isWarmed)
+        addWarmedStorage(_addr, _key);
+    return isWarmed;
+}
+
+bool State::isWarmedStorage(Address const& _addr, u256 const& _key) const
+{
+    auto itr = m_warmed.find(_addr);
+    return itr != m_warmed.end() && itr->second.count(_key) > 0;
+}
+
+void State::addWarmedAddress(Address const& _addr)
+{
+    if (m_warmed.find(_addr) == m_warmed.end())
+    {
+        m_warmed[_addr] = std::set<u256>{};
+        m_changeLog.emplace_back(Change::WarmedAddress, _addr, 0, 0);
+    }
+}
+
+void State::addWarmedStorage(Address const& _addr, u256 const& _key)
+{
+    auto itr = m_warmed.find(_addr);
+    if (itr == m_warmed.end())
+    {
+        itr = m_warmed.insert(std::make_pair(_addr, std::set<u256>{})).first;
+        m_changeLog.emplace_back(Change::WarmedAddressAndStorage, _addr, _key, 0);
+    }
+    else
+        m_changeLog.emplace_back(Change::WarmedStorage, _addr, _key, 0);
+    itr->second.insert(_key);
 }
 
 std::ostream& dev::eth::operator<<(std::ostream& _out, State const& _s)

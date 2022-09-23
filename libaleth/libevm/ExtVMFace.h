@@ -260,6 +260,12 @@ public:
     /// Check nonce for EIP-2681
     virtual bool checkNonce(Address) { return true; }
 
+    /// Access account.
+    virtual bool accessAddress(Address const& _addr) = 0;
+
+    /// Access account storage.
+    virtual bool accessStorage(Address const& _addr, u256 const& _key) = 0;
+
 private:
     EnvInfo const& m_envInfo;
 

@@ -304,14 +304,12 @@ evmc::Result EvmCHost::call(evmc_message const& _msg) noexcept
 
 evmc_access_status EvmCHost::access_account(const evmc::address& addr) noexcept
 {
-    // TODO:
-    return EVMC_ACCESS_COLD;
+    return m_extVM.accessAddress(fromEvmC(addr)) ? EVMC_ACCESS_WARM : EVMC_ACCESS_COLD;
 }
 
 evmc_access_status EvmCHost::access_storage(const evmc::address& addr, const evmc::bytes32& key) noexcept
 {
-    // TODO:
-    return EVMC_ACCESS_COLD;
+    return m_extVM.accessStorage(fromEvmC(addr), fromEvmC(key)) ? EVMC_ACCESS_WARM : EVMC_ACCESS_COLD;
 }
 
 bool EvmCHost::check_nonce(const evmc::address& addr) noexcept

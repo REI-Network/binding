@@ -96,7 +96,16 @@ struct Change
         Code,
 
         /// Account was touched for the first time.
-        Touch
+        Touch,
+
+        /// Account is warmed.
+        WarmedAddress,
+
+        /// Account storage is warmed.
+        WarmedStorage,
+
+        /// Both account and account storage are warmed.
+        WarmedAddressAndStorage
     };
 
     Kind kind;        ///< The kind of the change.
@@ -107,8 +116,7 @@ struct Change
     /// Helper constructor to make change log update more readable.
     Change(Kind _kind, Address const& _addr, u256 const& _value = 0):
             kind(_kind), address(_addr), value(_value)
-    {
-    }
+    {}
 
     /// Helper constructor especially for storage change log.
     Change(Address const& _addr, u256 const& _key, u256 const& _value):
@@ -118,6 +126,11 @@ struct Change
     /// Helper constructor for nonce change log.
     Change(Address const& _addr, u256 const& _value):
             kind(Nonce), address(_addr), value(_value)
+    {}
+
+    /// Helper constructor for all kinds.
+    Change(Kind _kind, Address const& _addr, u256 const& _key, u256 const& _value):
+            kind(_kind), address(_addr), key(_key), value(_value)
     {}
 };
 
@@ -317,6 +330,12 @@ public:
 
     ChangeLog const& changeLog() const { return m_changeLog; }
 
+    /// Access account.
+    bool accessAddress(Address const& _addr);
+
+    /// Access account storage.
+    bool accessStorage(Address const& _addr, u256 const& _key);
+
 private:
     /// Turns all "touched" empty accounts into non-alive accounts.
     void removeEmptyAccounts();
@@ -338,6 +357,18 @@ private:
     /// exception occurred.
     bool executeTransaction(Executive& _e, Transaction const& _t, OnOpFunc const& _onOp);
 
+    /// Check an address is warmed.
+    bool isWarmedAddress(Address const& _addr) const { return m_warmed.count(_addr) > 0; }
+
+    /// Check a slot is wamred.
+    bool isWarmedStorage(Address const& _addr, u256 const& _key) const;
+
+    /// Mark an address as warmed.
+    void addWarmedAddress(Address const& _addr);
+
+    /// Mark a slot as warmed.
+    void addWarmedStorage(Address const& _addr, u256 const& _key);
+
     /// Our overlay for the state tree.
     OverlayDB m_db;
     /// Our state tree, as an OverlayDB DB.
@@ -353,6 +384,8 @@ private:
     AddressHash m_touched;
     /// Tracks addresses that were touched and should stay touched in case of rollback
     AddressHash m_unrevertablyTouched;
+    /// Tracks all warmed addresses
+    std::unordered_map<Address, std::set<u256>> m_warmed;
 
     u256 m_accountStartNonce;
 

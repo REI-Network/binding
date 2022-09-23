@@ -95,6 +95,12 @@ public:
     /// Check nonce for EIP-2681
     bool checkNonce(Address) final;
 
+    /// Access account.
+    bool accessAddress(Address const& _addr) final { return m_s.accessAddress(_addr); }
+
+    /// Access account storage.
+    bool accessStorage(Address const& _addr, u256 const& _key) final { return m_s.accessStorage(_addr, _key); }
+
 private:
     EVMSchedule const& initEvmSchedule(int64_t _blockNumber, u256 const& _version) const
     {
