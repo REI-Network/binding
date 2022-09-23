@@ -46,6 +46,8 @@ TransactionBase::TransactionBase(bytesConstRef _rlpData, CheckTransaction _check
             if (!rlp.isList())
                 BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("transaction RLP must be a list"));
 
+            m_txType = TransactionType::AccessListEIP2930;
+
             m_chainId = rlp[0].toInt<uint64_t>();
             m_nonce = rlp[1].toInt<u256>();
             m_gasPrice = rlp[2].toInt<u256>();
@@ -209,6 +211,9 @@ u256 TransactionBase::rawV() const
     if (!m_vrs)
         BOOST_THROW_EXCEPTION(TransactionIsUnsigned());
 
+    if (m_txType == TransactionType::AccessListEIP2930)
+        return m_vrs->v;
+
     int const vOffset = m_chainId.has_value() ? *m_chainId * 2 + 35 : 27;
     return m_vrs->v + vOffset;
 }
@@ -227,13 +232,34 @@ void TransactionBase::streamRLP(RLPStream& _s, IncludeSignature _sig, bool _forE
     if (m_type == NullTransaction)
         return;
 
-    _s.appendList((_sig || _forEip155hash ? 3 : 0) + 6);
+    int items = (_sig || _forEip155hash ? 3 : 0) + 6;
+    if (m_txType == TransactionType::AccessListEIP2930)
+        items += 2;
+
+    _s.appendList(items);
+
+    if (m_txType == TransactionType::AccessListEIP2930)
+    {
+        if (!m_chainId.has_value())
+            BOOST_THROW_EXCEPTION(InvalidChainID() << errinfo_comment("missing chain id"));
+
+        _s << *m_chainId;
+    }
+
     _s << m_nonce << m_gasPrice << m_gas;
     if (m_type == MessageCall)
         _s << m_receiveAddress;
     else
         _s << "";
     _s << m_value << m_data;
+
+    if (m_txType == TransactionType::AccessListEIP2930)
+    {
+        if (!m_accessList.has_value())
+            BOOST_THROW_EXCEPTION(InvalidAccessList() << errinfo_comment("missing access list"));
+
+        m_accessList->streamRLP(_s);
+    }
 
     if (_sig)
     {
@@ -287,6 +313,10 @@ h256 TransactionBase::sha3(IncludeSignature _sig) const
 
     RLPStream s;
     streamRLP(s, _sig, isReplayProtected() && _sig == WithoutSignature);
+
+    auto out = s.out();
+    if (m_txType == TransactionType::AccessListEIP2930)
+        out.insert(out.begin(), (byte)TransactionType::AccessListEIP2930);
 
     auto ret = dev::sha3(s.out());
     if (_sig == WithSignature)

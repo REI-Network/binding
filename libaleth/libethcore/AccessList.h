@@ -19,6 +19,8 @@ class AccessList
 
     int64_t calculateBaseGas(EVMSchedule const &_schedule);
 
+    void streamRLP(RLPStream& _s) const;
+
     std::vector<std::pair<Address, std::vector<u256>>> list;
     
 private:

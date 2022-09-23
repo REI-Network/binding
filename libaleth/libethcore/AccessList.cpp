@@ -44,3 +44,15 @@ int64_t AccessList::calculateBaseGas(EVMSchedule const &_schedule)
 {
     return _schedule.accessListAddressCost * list.size() + _schedule.accessListStroageKeyCost * m_keys;
 }
+
+void AccessList::streamRLP(RLPStream& _s) const
+{
+    _s.appendList(list.size());
+    for (const auto& pair : list)
+    {
+        _s << pair.first;
+        _s.appendList(pair.second.size());
+        for (const auto& key : pair.second)
+            _s << key;
+    }
+}

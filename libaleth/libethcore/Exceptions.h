@@ -64,6 +64,7 @@ DEV_SIMPLE_EXCEPTION(InvalidZeroSignatureTransaction);
 DEV_SIMPLE_EXCEPTION(InvalidTransactionReceiptFormat);
 DEV_SIMPLE_EXCEPTION(InvalidTransactionType);
 DEV_SIMPLE_EXCEPTION(InvalidAccessList);
+DEV_SIMPLE_EXCEPTION(InvalidChainID);
 DEV_SIMPLE_EXCEPTION(TransactionReceiptVersionError);
 DEV_SIMPLE_EXCEPTION(PendingTransactionAlreadyExists);
 DEV_SIMPLE_EXCEPTION(TransactionAlreadyInChain);
