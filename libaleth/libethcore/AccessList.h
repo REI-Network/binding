@@ -17,6 +17,8 @@ using AccessListStruct = std::vector<std::pair<Address, std::vector<u256>>>;
 class AccessList
 {
   public:
+    AccessList(): m_keys(0) {}
+    AccessList(AccessListStruct&& _list);
     AccessList(RLP const &_rlp);
 
     /// Calculate access list base gas usage.

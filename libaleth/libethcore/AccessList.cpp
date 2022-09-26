@@ -4,6 +4,12 @@
 using namespace dev;
 using namespace dev::eth;
 
+AccessList::AccessList(AccessListStruct&& _list): m_list(std::move(_list)), m_keys(0)
+{
+    for (const auto& pair : m_list)
+        m_keys += pair.second.size();
+}
+
 AccessList::AccessList(RLP const &_rlp): m_keys(0)
 {
     if (!_rlp.isList())
