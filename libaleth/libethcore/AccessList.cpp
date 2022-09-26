@@ -36,19 +36,19 @@ AccessList::AccessList(RLP const &_rlp): m_keys(0)
         }
 
         m_keys += keys.size();
-        list.emplace_back(std::make_pair(address, keys));
+        m_list.emplace_back(std::make_pair(address, keys));
     }
 }
 
 int64_t AccessList::calculateBaseGas(EVMSchedule const &_schedule) const
 {
-    return _schedule.accessListAddressCost * list.size() + _schedule.accessListStroageKeyCost * m_keys;
+    return _schedule.accessListAddressCost * m_list.size() + _schedule.accessListStroageKeyCost * m_keys;
 }
 
 void AccessList::streamRLP(RLPStream& _s) const
 {
-    _s.appendList(list.size());
-    for (const auto& pair : list)
+    _s.appendList(m_list.size());
+    for (const auto& pair : m_list)
     {
         _s << pair.first;
         _s.appendList(pair.second.size());

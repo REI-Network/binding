@@ -32,7 +32,7 @@ TransactionBase::TransactionBase(bytesConstRef _rlpData, CheckTransaction _check
     if (_rlpData.size() == 0)
         BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("RLP data is empty"));
 
-    // EIP-2718 typed transaction logic
+    // EIP-2718 typed transaction.
     auto firstByte = _rlpData[0];
     if (firstByte < 0x7f)
     {
@@ -101,6 +101,7 @@ TransactionBase::TransactionBase(bytesConstRef _rlpData, CheckTransaction _check
         return;
     }
 
+    // Legacy transaction.
     RLP const rlp(_rlpData);
     try
     {
