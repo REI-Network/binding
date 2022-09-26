@@ -194,7 +194,8 @@ struct TransactionSkeleton
 	u256 nonce = Invalid256;
 	u256 gas = Invalid256;
 	u256 gasPrice = Invalid256;
-	std::optional<AccessListStruct> accessList;
+	boost::optional<AccessListStruct> accessList;
+	boost::optional<uint64_t> chainID;
 
 	std::string userReadable(bool _toProxy, std::function<std::pair<bool, std::string>(TransactionSkeleton const&)> const& _getNatSpec, std::function<std::string(Address const&)> const& _formatAddress) const;
 };

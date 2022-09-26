@@ -23,8 +23,13 @@ TransactionBase::TransactionBase(TransactionSkeleton const& _ts, Secret const& _
     m_data(_ts.data),
     m_sender(_ts.from)
 {
+    if (_ts.accessList.has_value() != _ts.chainID.has_value())
+         BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("Both access list and chain id must be provided"));
     if (_ts.accessList.has_value())
+    {
         m_accessList = AccessList{std::move(*(const_cast<TransactionSkeleton*>(&_ts)->accessList))};
+        m_chainId = _ts.chainID;
+    }
     if (_s)
         sign(_s);
 }
