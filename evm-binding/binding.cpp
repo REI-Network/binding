@@ -4,6 +4,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/optional.hpp>
+
 #include <napi.h>
 
 #include <libethereum/ChainParams.h>
@@ -222,6 +224,43 @@ u256 toU256(const Napi::Value &value, std::optional<u256> defaultValue = {})
     }
 }
 
+u256 toFixed32U256(const Napi::Value &value)
+{
+    if (!value.IsString())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return 0;
+    }
+
+    auto bytes = fromHex(value.As<Napi::String>());
+
+    if (bytes.size() != 32)
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return 0;
+    }
+
+    return u256{bytes};
+}
+
+u256s toFixed32U256s(const Napi::Value &value)
+{
+    if (!value.IsArray())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return u256s{};
+    }
+
+    auto array = value.As<Napi::Array>();
+
+    u256s result;
+    for (std::size_t i = 0; i < array.Length(); i++)
+    {
+        result.emplace_back(toFixed32U256(array.Get(i)));
+    }
+    return result;
+}
+
 h256 toH256(const Napi::Value &value, std::optional<h256> defaultValue = {})
 {
     if (value.IsString())
@@ -382,6 +421,40 @@ LastBlockHashesLoader toLoader(const Napi::Value &value)
     return [func = value.As<Napi::Function>()]() { return toH256s(func.Call({})); };
 }
 
+AccessListStruct toAccessList(const Napi::Value &value)
+{
+    AccessListStruct accessList;
+    if (!value.IsArray())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return accessList;
+    }
+
+    auto array = value.As<Napi::Array>();
+
+    for (std::size_t i = 0; i < array.Length(); i++)
+    {
+        auto items = array.Get(i);
+        if (!items.IsArray())
+        {
+            Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+            return accessList;
+        }
+
+        auto itemsArray = items.As<Napi::Array>();
+        if (itemsArray.Length() != 2)
+        {
+            Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+            return accessList;
+        }
+
+        accessList.emplace_back(
+            std::make_pair(toAddress(itemsArray.Get((uint32_t)0)), toFixed32U256s(itemsArray.Get((uint32_t)1))));
+    }
+
+    return accessList;
+}
+
 Transaction toTx(const Napi::Value &input)
 {
     if (input.IsBuffer())
@@ -392,6 +465,8 @@ Transaction toTx(const Napi::Value &input)
     else if (input.IsObject())
     {
         // decode as object
+        boost::optional<AccessListStruct> accessList;
+        boost::optional<uint64_t> chainID;
         auto obj = input.As<Napi::Object>();
         auto value = toU256(obj.Get("value"), 0);
         auto gasPrice = toU256(obj.Get("gasPrice"), 0);
@@ -399,17 +474,23 @@ Transaction toTx(const Napi::Value &input)
         auto data = toBytes(obj.Get("data"), bytes{});
         auto nonce = toU256(obj.Get("nonce"), 0);
         auto from = toAddress(obj.Get("from"), ZeroAddress);
+        auto accessListValue = obj.Get("accessList");
+        if (!accessListValue.IsUndefined() && !accessListValue.IsNull())
+            accessList = toAccessList(accessListValue);
+        auto chainIDValue = obj.Get("chainID");
+        if (!chainIDValue.IsUndefined() && !chainIDValue.IsNull())
+            chainID = toUint32(chainIDValue);
         auto destValue = obj.Get("to");
         if (!destValue.IsUndefined() && !destValue.IsNull())
         {
             auto dest = toAddress(destValue);
-            Transaction tx(value, gasPrice, gas, dest, data, nonce);
+            Transaction tx(value, gasPrice, gas, dest, data, nonce, accessList, chainID);
             tx.forceSender(from);
             return tx;
         }
         else
         {
-            Transaction tx(value, gasPrice, gas, data, nonce);
+            Transaction tx(value, gasPrice, gas, data, nonce, accessList, chainID);
             tx.forceSender(from);
             return tx;
         }
