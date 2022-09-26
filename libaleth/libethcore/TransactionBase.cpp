@@ -23,14 +23,7 @@ TransactionBase::TransactionBase(TransactionSkeleton const& _ts, Secret const& _
     m_data(_ts.data),
     m_sender(_ts.from)
 {
-    if (_ts.accessList.has_value() != _ts.chainID.has_value())
-         BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("Both access list and chain id must be provided"));
-    if (_ts.accessList.has_value())
-    {
-        m_txType = TransactionType::AccessListEIP2930;
-        m_accessList = AccessList{std::move(*(const_cast<TransactionSkeleton*>(&_ts)->accessList))};
-        m_chainId = *_ts.chainID;
-    }
+    fillEIP2930Transaction(_ts.accessList, _ts.chainID);
     if (_s)
         sign(_s);
 }
@@ -172,6 +165,18 @@ TransactionBase::TransactionBase(bytesConstRef _rlpData, CheckTransaction _check
     {
         _e << errinfo_name("invalid transaction format: " + toString(rlp) + " RLP: " + toHex(rlp.data()));
         throw;
+    }
+}
+
+void TransactionBase::fillEIP2930Transaction(const boost::optional<AccessListStruct> accessList, const boost::optional<uint64_t> chainID)
+{
+    if (accessList.has_value() != chainID.has_value())
+         BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("Both access list and chain id must be provided"));
+    if (accessList.has_value())
+    {
+        m_txType = TransactionType::AccessListEIP2930;
+        m_accessList = *accessList;
+        m_chainId = *chainID;
     }
 }
 

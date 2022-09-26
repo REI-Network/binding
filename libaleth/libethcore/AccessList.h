@@ -16,7 +16,7 @@ class AccessList
 {
   public:
     AccessList(): m_keys(0) {}
-    AccessList(AccessListStruct&& _list);
+    AccessList(AccessListStruct const &_list);
     AccessList(RLP const &_rlp);
 
     /// Calculate access list base gas usage.

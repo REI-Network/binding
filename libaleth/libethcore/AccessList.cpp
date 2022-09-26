@@ -4,7 +4,7 @@
 using namespace dev;
 using namespace dev::eth;
 
-AccessList::AccessList(AccessListStruct&& _list): m_list(std::move(_list)), m_keys(0)
+AccessList::AccessList(AccessListStruct const& _list): m_list(_list), m_keys(0)
 {
     for (const auto& pair : m_list)
         m_keys += pair.second.size();
