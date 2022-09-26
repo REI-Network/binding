@@ -23,6 +23,8 @@ TransactionBase::TransactionBase(TransactionSkeleton const& _ts, Secret const& _
     m_data(_ts.data),
     m_sender(_ts.from)
 {
+    if (_ts.accessList.has_value())
+        m_accessList = AccessList{std::move(*(const_cast<TransactionSkeleton*>(&_ts)->accessList))};
     if (_s)
         sign(_s);
 }

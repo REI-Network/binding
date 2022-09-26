@@ -12,8 +12,6 @@ namespace dev
 namespace eth
 {
 
-using AccessListStruct = std::vector<std::pair<Address, std::vector<u256>>>;
-
 class AccessList
 {
   public:

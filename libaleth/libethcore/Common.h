@@ -8,6 +8,8 @@
 #include <libdevcore/Exceptions.h>
 #include <libdevcore/FixedHash.h>
 
+#include <boost/optional.hpp>
+
 #include <functional>
 #include <string>
 
@@ -44,6 +46,9 @@ Address toAddress(std::string const& _s);
 
 /// Get information concerning the currency denominations.
 std::vector<std::pair<u256, std::string>> const& units();
+
+/// Access list struct.
+using AccessListStruct = std::vector<std::pair<Address, std::vector<u256>>>;
 
 /// The log bloom's size (2048-bit).
 using LogBloom = h2048;
@@ -189,6 +194,7 @@ struct TransactionSkeleton
 	u256 nonce = Invalid256;
 	u256 gas = Invalid256;
 	u256 gasPrice = Invalid256;
+	std::optional<AccessListStruct> accessList;
 
 	std::string userReadable(bool _toProxy, std::function<std::pair<bool, std::string>(TransactionSkeleton const&)> const& _getNatSpec, std::function<std::string(Address const&)> const& _formatAddress) const;
 };
