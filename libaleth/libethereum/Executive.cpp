@@ -138,6 +138,13 @@ void Executive::initialize(Transaction const& _transaction)
         }
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
+
+    if (m_t.isEIP2930Transaction())
+        m_t.traverseAccessList([this](const auto& _addr, const auto& _keys) {
+            m_s.accessAddress(_addr);
+            for (const auto& key : _keys)
+                m_s.accessStorage(_addr, key);
+        });
 }
 
 bool Executive::execute()

@@ -24,6 +24,9 @@ class AccessList
 
     /// RLP encode access list.
     void streamRLP(RLPStream& _s) const;
+
+    /// Traverse access list.
+    void forEach(std::function<void(Address const&, u256s const&)> const &_cb) const;
     
 private:
     int64_t m_keys;

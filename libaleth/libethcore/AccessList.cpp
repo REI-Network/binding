@@ -62,3 +62,9 @@ void AccessList::streamRLP(RLPStream& _s) const
             _s << key;
     }
 }
+
+void AccessList::forEach(std::function<void(Address const&, u256s const&)> const &_cb) const
+{
+    for (const auto& pair : m_list)
+        _cb(pair.first, pair.second);
+}
