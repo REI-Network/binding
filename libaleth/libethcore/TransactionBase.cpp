@@ -28,7 +28,7 @@ TransactionBase::TransactionBase(TransactionSkeleton const& _ts, Secret const& _
     if (_ts.accessList.has_value())
     {
         m_accessList = AccessList{std::move(*(const_cast<TransactionSkeleton*>(&_ts)->accessList))};
-        m_chainId = _ts.chainID;
+        m_chainId = *_ts.chainID;
     }
     if (_s)
         sign(_s);
