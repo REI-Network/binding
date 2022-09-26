@@ -14,6 +14,9 @@ namespace
 {
 evmc_revision toRevision(EVMSchedule const& _schedule) noexcept
 {
+    // TODO: Judging by variables is very ugly.
+    if (_schedule.eip2565Mode)
+        return EVMC_BERLIN;
     if (_schedule.haveChainID)
         return EVMC_ISTANBUL;
     if (_schedule.haveCreate2 && !_schedule.eip1283Mode)
