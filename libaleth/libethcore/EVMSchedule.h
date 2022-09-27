@@ -197,6 +197,7 @@ static const EVMSchedule BerlinSchedule = [] {
     schedule.eip2929Mode = true;
     schedule.eip2930Mode = true;
     schedule.sloadGas = 100;
+    schedule.sstoreUnchangedGas = 100;
     schedule.sstoreResetGas = 5000 - 2100;
     return schedule;
 }();
