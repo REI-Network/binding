@@ -84,13 +84,14 @@ void Executive::accrueSubState(SubState& _parentContext)
 void Executive::initialize(Transaction const& _transaction)
 {
     m_t = _transaction;
-    m_baseGasRequired = m_t.baseGasRequired(m_sealEngine.evmSchedule(m_envInfo.number()));
+    const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
+    m_baseGasRequired = m_t.baseGasRequired(schedule);
+    clog(VerbosityError, "binding") << "baseGasRequired: " << m_baseGasRequired;
     try
     {
         m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
 
         // TODO: This doesn't belong here!
-        eth::EVMSchedule const& schedule = m_sealEngine.evmSchedule(m_envInfo.header().number());
         // Check sender address for EIP-3607
         if (schedule.eip3607Mode && m_s.addressHasCode(m_t.sender()))
              BOOST_THROW_EXCEPTION(EIP3607InvalidSender());
@@ -140,7 +141,14 @@ void Executive::initialize(Transaction const& _transaction)
     }
 
     if (m_t.isEIP2930Transaction())
-        m_t.traverseAccessList([this](const auto& _addr, const auto& _keys) {
+        for (const auto& pair : schedule.supportedPrecompiled)
+            if (pair.second)
+                m_s.accessAddress(pair.first);
+        m_s.accessAddress(m_t.sender());
+        if (!m_t.isCreation())
+             m_s.accessAddress(m_t.to());
+        m_t.traverseAccessList([this](const auto& _addr, const auto& _keys)
+        {
             m_s.accessAddress(_addr);
             for (const auto& key : _keys)
                 m_s.accessStorage(_addr, key);
