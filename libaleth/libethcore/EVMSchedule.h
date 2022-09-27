@@ -31,6 +31,8 @@ struct EVMSchedule
     bool eip2200Mode = false;
     bool eip2565Mode = false;
     bool eip2681Mode = true;
+    bool eip2929Mode = false;
+    bool eip2930Mode = false;
     bool eip3607Mode = true;
     bool haveBitwiseShifting = false;
     bool haveRevert = false;
@@ -192,6 +194,8 @@ static const EVMSchedule& MuirGlacierSchedule = IstanbulSchedule;
 static const EVMSchedule BerlinSchedule = [] {
     EVMSchedule schedule = MuirGlacierSchedule;
     schedule.eip2565Mode = true;
+    schedule.eip2929Mode = true;
+    schedule.eip2930Mode = true;
     schedule.sloadGas = 100;
     schedule.sstoreResetGas = 5000 - 2100;
     return schedule;

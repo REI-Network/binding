@@ -144,6 +144,9 @@ void SealEngineFace::verifyTransaction(ImportRequirements::value _ir, Transactio
 
     eth::EVMSchedule const& schedule = evmSchedule(_header.number());
 
+    if (!schedule.eip2930Mode && _t.isEIP2930Transaction())
+        BOOST_THROW_EXCEPTION(InvalidTransactionFormat() << errinfo_comment("EIP-2930 trsansaction is not yet supported"));
+
     // Pre calculate the gas needed for execution
     if ((_ir & ImportRequirements::TransactionBasic) && _t.baseGasRequired(schedule) > _t.gas())
         BOOST_THROW_EXCEPTION(OutOfGasIntrinsic() << RequirementError(

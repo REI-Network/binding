@@ -139,18 +139,16 @@ void Executive::initialize(Transaction const& _transaction)
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
 
-    // TODO: Judging by variables is very ugly.
-    if (schedule.eip2565Mode)
+    // EIP-2929 logic:
+    // Mark tx.sender, tx.to and the set of all precompiles as warmed.
+    if (schedule.eip2929Mode)
     {
-        // EIP-2929 logic:
-        // Add tx.sender, tx.to and he set of all precompiles to accessed_addresses.
         for (const auto& pair : schedule.supportedPrecompiled)
             if (pair.second)
                 m_s.accessAddress(pair.first);
         m_s.accessAddress(m_t.sender());
         if (!m_t.isCreation())
             m_s.accessAddress(m_t.to());
-        // TODO: creation address
     }
 
     // EIP-2930 logic:
@@ -318,11 +316,11 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u2
     // account if it does not exist yet.
     m_s.transferBalance(_sender, m_newAddress, _endowment);
 
+    const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
+    if (schedule.eip2929Mode) 
+        m_s.accessAddress(m_newAddress);
     u256 newNonce = m_s.requireAccountStartNonce();
-    // if (m_envInfo.number() >= m_sealEngine.chainParams().EIP158ForkBlock)
-    //     newNonce += 1;
-    // use EVMSchedule
-    if (m_sealEngine.evmSchedule(m_envInfo.number()).eip158Mode)
+    if (schedule.eip158Mode)
         newNonce += 1;
     m_s.setNonce(m_newAddress, newNonce);
 
