@@ -86,7 +86,6 @@ void Executive::initialize(Transaction const& _transaction)
     m_t = _transaction;
     const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
     m_baseGasRequired = m_t.baseGasRequired(schedule);
-    clog(VerbosityError, "binding") << "baseGasRequired: " << m_baseGasRequired;
     try
     {
         m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
