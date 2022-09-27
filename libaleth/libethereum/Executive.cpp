@@ -139,13 +139,23 @@ void Executive::initialize(Transaction const& _transaction)
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
 
-    if (m_t.isEIP2930Transaction())
+    // TODO: Judging by variables is very ugly.
+    if (schedule.eip2565Mode)
+    {
+        // EIP-2929 logic:
+        // Add tx.sender, tx.to and he set of all precompiles to accessed_addresses.
         for (const auto& pair : schedule.supportedPrecompiled)
             if (pair.second)
                 m_s.accessAddress(pair.first);
         m_s.accessAddress(m_t.sender());
         if (!m_t.isCreation())
-             m_s.accessAddress(m_t.to());
+            m_s.accessAddress(m_t.to());
+        // TODO: creation address
+    }
+
+    // EIP-2930 logic:
+    // Mark all addresses and storage in access list as warmed.
+    if (m_t.isEIP2930Transaction())
         m_t.traverseAccessList([this](const auto& _addr, const auto& _keys)
         {
             m_s.accessAddress(_addr);

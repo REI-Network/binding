@@ -230,10 +230,12 @@ public:
     ///
     /// @param beneficiary  The address of the account which will receive ETH
     ///                     from the selfdestructed account.
-    virtual void selfdestruct(Address beneficiary)
+    virtual bool selfdestruct(Address beneficiary)
     {
         (void)beneficiary;
+        bool registered = sub.selfdestructs.count(myAddress) > 0;
         sub.selfdestructs.insert(myAddress);
+        return registered;
     }
 
     /// Create a new (contract) account.

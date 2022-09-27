@@ -192,6 +192,8 @@ static const EVMSchedule& MuirGlacierSchedule = IstanbulSchedule;
 static const EVMSchedule BerlinSchedule = [] {
     EVMSchedule schedule = MuirGlacierSchedule;
     schedule.eip2565Mode = true;
+    schedule.sloadGas = 100;
+    schedule.sstoreResetGas = 5000 - 2100;
     return schedule;
 }();
 
