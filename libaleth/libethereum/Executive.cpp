@@ -293,6 +293,10 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u2
         m_envInfo.number() < m_sealEngine.chainParams().experimentalForkBlock)  // EIP86
         m_s.incNonce(_sender);
 
+    const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
+    if (schedule.eip2929Mode) 
+        m_s.accessAddress(m_newAddress);
+
     m_savepoint = m_s.savepoint();
 
     m_isCreation = true;
@@ -316,9 +320,6 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u2
     // account if it does not exist yet.
     m_s.transferBalance(_sender, m_newAddress, _endowment);
 
-    const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
-    if (schedule.eip2929Mode) 
-        m_s.accessAddress(m_newAddress);
     u256 newNonce = m_s.requireAccountStartNonce();
     if (schedule.eip158Mode)
         newNonce += 1;
@@ -466,6 +467,7 @@ bool Executive::finalize()
         // Refunds must be applied before the miner gets the fees.
         assert(m_ext->sub.refunds >= 0);
         int64_t maxRefund = (static_cast<int64_t>(m_t.gas()) - static_cast<int64_t>(m_gas)) / 2;
+        // std::cout << "refund: " << min(maxRefund, m_ext->sub.refunds) << " " << m_ext->sub.refunds << " size: " << m_ext->sub.selfdestructs.size() << std::endl;
         m_gas += min(maxRefund, m_ext->sub.refunds);
     }
 

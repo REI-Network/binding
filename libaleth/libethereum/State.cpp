@@ -216,6 +216,7 @@ void State::commit(CommitBehaviour _commitBehaviour)
     if (_commitBehaviour == CommitBehaviour::RemoveEmptyAccounts)
         removeEmptyAccounts();
     m_touched += dev::eth::commit(m_cache, m_state);
+    m_warmed.clear();
     m_changeLog.clear();
     m_cache.clear();
     m_unchangedCacheEntries.clear();
@@ -444,6 +445,7 @@ u256 State::storage(Address const& _id, u256 const& _key) const
 void State::setStorage(Address const& _contract, u256 const& _key, u256 const& _value)
 {
     m_changeLog.emplace_back(_contract, _key, storage(_contract, _key));
+    // TODO: This may cause a new account to be created in m_cache.
     m_cache[_contract].setStorage(_key, _value);
 }
 
@@ -457,6 +459,7 @@ u256 State::originalStorageValue(Address const& _contract, u256 const& _key) con
 
 void State::clearStorage(Address const& _contract)
 {
+    // TODO: This may cause a new account to be created in m_cache.
     h256 const& oldHash{m_cache[_contract].baseRoot()};
     if (oldHash == EmptyTrie)
         return;
@@ -537,6 +540,7 @@ void State::setCode(Address const& _address, bytes&& _code, u256 const& _version
     // (not allowed in contract creation logic in Executive)
     assert(!addressHasCode(_address));
     m_changeLog.emplace_back(Change::Code, _address);
+    // TODO: This may cause a new account to be created in m_cache.
     m_cache[_address].setCode(move(_code), _version);
 }
 
@@ -590,32 +594,32 @@ void State::rollback(size_t _savepoint)
     while (_savepoint != m_changeLog.size())
     {
         auto& change = m_changeLog.back();
-        auto& account = m_cache[change.address];
+        auto& acc = *account(change.address);
 
         // Public State API cannot be used here because it will add another
         // change log entry.
         switch (change.kind)
         {
         case Change::Storage:
-            account.setStorage(change.key, change.value);
+            acc.setStorage(change.key, change.value);
             break;
         case Change::StorageRoot:
-            account.setStorageRoot(change.value);
+            acc.setStorageRoot(change.value);
             break;
         case Change::Balance:
-            account.addBalance(0 - change.value);
+            acc.addBalance(0 - change.value);
             break;
         case Change::Nonce:
-            account.setNonce(change.value);
+            acc.setNonce(change.value);
             break;
         case Change::Create:
             m_cache.erase(change.address);
             break;
         case Change::Code:
-            account.resetCode();
+            acc.resetCode();
             break;
         case Change::Touch:
-            account.untouch();
+            acc.untouch();
             m_unchangedCacheEntries.emplace_back(change.address);
             break;
         case Change::WarmedAddress:
@@ -665,14 +669,14 @@ std::pair<ExecutionResult, TransactionReceipt> State::execute(EnvInfo const& _en
             m_cache.clear();
             break;
         case Permanence::Committed:
-            // removeEmptyAccounts = _envInfo.number() >= _sealEngine.chainParams().EIP158ForkBlock;
-            // use EVMSchedule
             removeEmptyAccounts = _sealEngine.evmSchedule(_envInfo.number()).eip158Mode;
             commit(removeEmptyAccounts ? State::CommitBehaviour::RemoveEmptyAccounts : State::CommitBehaviour::KeepEmptyAccounts);
             break;
         case Permanence::Uncommitted:
             break;
     }
+
+    // std::cout << "receipt gas used: " << (startGasUsed + e.gasUsed()).convert_to<std::string>() << std::endl;
 
     TransactionReceipt const receipt = _sealEngine.evmSchedule(_envInfo.number()).haveRevert ?
         TransactionReceipt(statusCode, startGasUsed + e.gasUsed(), e.logs()) :
@@ -717,6 +721,7 @@ bool State::executeTransaction(Executive& _e, Transaction const& _t, OnOpFunc co
 
 bool State::accessAddress(Address const& _addr)
 {
+    // clog(VerbosityError, "binding") << "accessAddress: " << toHex(_addr) << " " << isWarmedAddress(_addr);
     auto isWarmed = isWarmedAddress(_addr);
     if (!isWarmed)
         addWarmedAddress(_addr);
@@ -725,6 +730,7 @@ bool State::accessAddress(Address const& _addr)
 
 bool State::accessStorage(Address const& _addr, u256 const& _key)
 {
+    // clog(VerbosityError, "binding") << "accessStorage: " << toHex(_addr) << " : " << _key.convert_to<std::string>();
     auto isWarmed = isWarmedStorage(_addr, _key);
     if (!isWarmed)
         addWarmedStorage(_addr, _key);

@@ -56,7 +56,7 @@ Napi::Value toNapiValue(Napi::Env env, const bytes &bs)
 
 Napi::Value toNapiValue(Napi::Env env, const u256 &u)
 {
-    return Napi::String::New(env, "0x" + u.str(16));
+    return Napi::String::New(env, u.convert_to<std::string>());
 }
 
 Napi::Value toNapiValue(Napi::Env env, const uint8_t &i)
