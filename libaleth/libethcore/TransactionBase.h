@@ -138,7 +138,7 @@ public:
     bool hasZeroSignature() const { return m_vrs && isZeroSignature(m_vrs->r, m_vrs->s); }
 
     /// @returns true if the transaction uses EIP155 replay protection
-    bool isReplayProtected() const { return m_chainId.has_value(); }
+    bool isReplayProtected() const { return m_txType != TransactionType::AccessListEIP2930 && m_chainId.has_value(); }
 
     /// @returns true if the transaction is an EIP2930 transaction
     bool isEIP2930Transaction() const { return m_txType == TransactionType::AccessListEIP2930; }

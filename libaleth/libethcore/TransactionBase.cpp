@@ -341,7 +341,7 @@ h256 TransactionBase::sha3(IncludeSignature _sig) const
     if (m_txType == TransactionType::AccessListEIP2930)
         out.insert(out.begin(), (byte)TransactionType::AccessListEIP2930);
 
-    auto ret = dev::sha3(s.out());
+    auto ret = dev::sha3(out);
     if (_sig == WithSignature)
         m_hashWith = ret;
     return ret;

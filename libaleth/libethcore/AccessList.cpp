@@ -56,10 +56,11 @@ void AccessList::streamRLP(RLPStream& _s) const
     _s.appendList(m_list.size());
     for (const auto& pair : m_list)
     {
+        _s.appendList(2);
         _s << pair.first;
         _s.appendList(pair.second.size());
         for (const auto& key : pair.second)
-            _s << key;
+            _s << h256(key);
     }
 }
 
