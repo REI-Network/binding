@@ -42,7 +42,7 @@ AccessList::AccessList(RLP const &_rlp): m_keys(0)
         }
 
         m_keys += keys.size();
-        m_list.emplace_back(std::make_pair(address, keys));
+        m_list.emplace_back(std::make_pair(std::move(address), std::move(keys)));
     }
 }
 

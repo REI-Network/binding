@@ -385,7 +385,7 @@ private:
     /// Tracks addresses that were touched and should stay touched in case of rollback
     AddressHash m_unrevertablyTouched;
     /// Tracks all warmed addresses
-    std::unordered_map<Address, std::set<u256>> m_warmed;
+    std::unordered_map<Address, std::set<h256>> m_warmed;
 
     u256 m_accountStartNonce;
 

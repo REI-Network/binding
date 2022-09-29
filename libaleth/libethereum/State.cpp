@@ -730,7 +730,7 @@ bool State::accessAddress(Address const& _addr)
 
 bool State::accessStorage(Address const& _addr, u256 const& _key)
 {
-    // clog(VerbosityError, "binding") << "accessStorage: " << toHex(_addr) << " : " << _key.convert_to<std::string>();
+    // clog(VerbosityError, "binding") << "accessStorage: " << toHex(_addr) << " : " << _key.convert_to<std::string>() << " " << isWarmedStorage(_addr, _key);
     auto isWarmed = isWarmedStorage(_addr, _key);
     if (!isWarmed)
         addWarmedStorage(_addr, _key);
@@ -747,7 +747,7 @@ void State::addWarmedAddress(Address const& _addr)
 {
     if (m_warmed.find(_addr) == m_warmed.end())
     {
-        m_warmed[_addr] = std::set<u256>{};
+        m_warmed[_addr] = std::set<h256>{};
         m_changeLog.emplace_back(Change::WarmedAddress, _addr, 0, 0);
     }
 }
@@ -757,7 +757,7 @@ void State::addWarmedStorage(Address const& _addr, u256 const& _key)
     auto itr = m_warmed.find(_addr);
     if (itr == m_warmed.end())
     {
-        itr = m_warmed.insert(std::make_pair(_addr, std::set<u256>{})).first;
+        itr = m_warmed.insert(std::make_pair(_addr, std::set<h256>{})).first;
         m_changeLog.emplace_back(Change::WarmedAddressAndStorage, _addr, _key, 0);
     }
     else
