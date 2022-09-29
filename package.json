@@ -16,7 +16,7 @@
     "install:leveldb": "test -d leveldb || (git clone https://github.com/REI-Network/leveldb && cd leveldb && git reset --hard 1162b57)",
     "install:napi-macros": "test -d napi-macros || (git clone https://github.com/hyperdivision/napi-macros && cd napi-macros && git reset --hard 6447512)",
     "install:snappy": "test -d snappy || (git clone https://github.com/google/snappy && cd snappy && git reset --hard 2b63814)",
-    "install:evmone": "test -d evmone || (git clone https://github.com/ethereum/evmone && cd evmone && git reset --hard f4c04ee && git submodule update --init --recursive)"
+    "install:evmone": "test -d evmone || (git clone https://github.com/ethereum/evmone && cd evmone && git reset --hard e95cdf7 && git submodule update --init --recursive)"
   },
   "repository": {
     "type": "git",
