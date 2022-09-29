@@ -9,4 +9,4 @@
 	url = https://github.com/google/snappy.git
 [submodule "evmone"]
 	path = evmone
-	url = https://github.com/ethereum/evmone
+	url = https://github.com/REI-Network/evmone
