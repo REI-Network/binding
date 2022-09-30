@@ -731,8 +731,10 @@ ExecutionResult State::executeMessage(EnvInfo const& _envInfo, SealEngineFace co
     size_t const savept = savepoint();
     try
     {
+        boost::optional<AccessList> accessList;
         if (_msg.accessList.has_value())
-            e.initializeAccessList(*_msg.accessList, _msg.cp.senderAddress, _msg.cp.receiveAddress, _msg.isCreation);
+            accessList = AccessList{*_msg.accessList};
+        e.initializeAccessList(accessList, _msg.cp.senderAddress, _msg.cp.receiveAddress, _msg.isCreation);
 
         if (!e.executeMessage(_msg))
             e.go();

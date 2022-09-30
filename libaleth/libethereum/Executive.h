@@ -110,7 +110,7 @@ public:
     void accrueSubState(SubState& _parentContext);
 
     /// ...
-    void initializeAccessList(AccessList const& _accessList, Address const& _from, Address const& _to, bool _isCreation);
+    void initializeAccessList(boost::optional<AccessList> const& _accessList, Address const& _from, Address const& _to, bool _isCreation);
     /// ...
     bool executeMessage(Message const& _msg);
 

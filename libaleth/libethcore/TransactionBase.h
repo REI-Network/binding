@@ -157,7 +157,7 @@ public:
     int64_t baseGasRequired(EVMSchedule const& _es) const;
 
     /// @returns Access list of EIP2930 transaction
-    const AccessList& accessList() const { return *m_accessList; }
+    const boost::optional<AccessList>& accessList() const { return m_accessList; }
 
 protected:
     /// Type of transaction.

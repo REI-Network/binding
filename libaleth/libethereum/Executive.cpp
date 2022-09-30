@@ -130,7 +130,7 @@ void Executive::initialize(Transaction const& _transaction)
     initializeAccessList(m_t.accessList(), m_t.sender(), m_t.to(), m_t.isCreation());
 }
 
-void Executive::initializeAccessList(AccessList const& _accessList, Address const& _from, Address const& _to, bool _isCreation)
+void Executive::initializeAccessList(boost::optional<AccessList> const& _accessList, Address const& _from, Address const& _to, bool _isCreation)
 {
     const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
     // EIP-2929 logic:
@@ -147,8 +147,8 @@ void Executive::initializeAccessList(AccessList const& _accessList, Address cons
 
     // EIP-2930 logic:
     // Mark all addresses and storage in access list as warmed.
-    if (m_t.isEIP2930Transaction())
-        _accessList.forEach([this](const auto& _addr, const auto& _keys)
+    if (_accessList.has_value())
+        _accessList->forEach([this](const auto& _addr, const auto& _keys)
         {
             m_s.accessAddress(_addr);
             for (const auto& key : _keys)
