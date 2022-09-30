@@ -149,5 +149,9 @@ export declare class JSEVMBinding {
     message: Message,
     gasUsed: string | number,
     loader: LastBlockHashesLoader
-  ): ExecutionResult;
+  ): {
+    stateRoot: string;
+    result: ExecutionResult;
+    logs: Log[];
+  };
 }

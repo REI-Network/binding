@@ -714,10 +714,10 @@ class EVMBinding
      * @param msg - Message
      * @param gasUsed - Gas used
      * @param loader - A function used to load block hash
-     * @return Execution result
+     * @return New state root hash, execution result and logs
      */
-    ExecutionResult runMessage(const h256 &stateRoot, const BlockHeader &header, const Message &msg,
-                               const u256 &gasUsed, LastBlockHashes loader)
+    auto runMessage(const h256 &stateRoot, const BlockHeader &header, const Message &msg, const u256 &gasUsed,
+                    LastBlockHashes loader)
     {
         createStateIfNotExsits();
 
@@ -726,11 +726,11 @@ class EVMBinding
         // reset state root
         m_state->setRoot(stateRoot);
         // execute transaction
-        auto result = m_state->executeMessage(envInfo, *m_engine, msg);
+        auto [result, logs] = m_state->executeMessage(envInfo, *m_engine, msg);
         // commit data to db
         m_state->db().commit();
 
-        return result;
+        return std::make_tuple(m_state->rootHash(), std::move(result), std::move(logs));
     }
 
   private:
@@ -814,6 +814,7 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
                                               InstanceMethod("genesis", &JSEVMBinding::genesis),
                                               InstanceMethod("runTx", &JSEVMBinding::runTx),
                                               InstanceMethod("runCall", &JSEVMBinding::runCall),
+                                              InstanceMethod("runMessage", &JSEVMBinding::runMessage),
                                           });
 
         Napi::FunctionReference *constructor = new Napi::FunctionReference();
@@ -969,7 +970,7 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
      * @param info_2 - Message object
      * @param info_3 - Gas used
      * @param info_4 - A function used to load block hash
-     * @return Contract output
+     * @return New state root hash, execution result and logs
      */
     Napi::Value runMessage(const Napi::CallbackInfo &info)
     {
@@ -982,8 +983,12 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
 
         // invoke cpp impl
         return executeUnderTryCatch(info.Env(), [&, this]() {
-            auto result = m_binding->runMessage(stateRoot, header, msg, gasUsed, loader);
-            return toNapiValue(info.Env(), result);
+            auto [newStateRoot, executionResult, logs] = m_binding->runMessage(stateRoot, header, msg, gasUsed, loader);
+            auto result = Napi::Object::New(info.Env());
+            result.Set("stateRoot", toNapiValue(info.Env(), newStateRoot));
+            result.Set("result", toNapiValue(info.Env(), executionResult));
+            result.Set("logs", toNapiValue(info.Env(), logs));
+            return result;
         });
     }
 

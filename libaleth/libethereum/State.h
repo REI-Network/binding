@@ -213,7 +213,7 @@ public:
     std::pair<ExecutionResult, TransactionReceipt> execute(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Transaction const& _t, Permanence _p = Permanence::Committed, OnOpFunc const& _onOp = OnOpFunc());
 
     /// ...
-    ExecutionResult executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p = Permanence::Committed);
+    std::pair<ExecutionResult, LogEntries> executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p = Permanence::Committed);
 
     /// Execute @a _txCount transactions of a given block.
     /// This will change the state accordingly.

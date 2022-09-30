@@ -720,7 +720,7 @@ bool State::executeTransaction(Executive& _e, Transaction const& _t, OnOpFunc co
     }
 }
 
-ExecutionResult State::executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p)
+std::pair<ExecutionResult, LogEntries> State::executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p)
 {
     // Create and initialize the executive. This will throw fairly cheaply and quickly if the
     // transaction is bad in any way.
@@ -760,7 +760,7 @@ ExecutionResult State::executeMessage(EnvInfo const& _envInfo, SealEngineFace co
             break;
     }
 
-    return res;
+    return make_pair(res, e.logs());
 }
 
 bool State::accessAddress(Address const& _addr)
