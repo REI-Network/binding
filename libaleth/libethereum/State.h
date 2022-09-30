@@ -136,6 +136,13 @@ struct Change
 
 using ChangeLog = std::vector<Change>;
 
+struct Message
+{
+    CallParameters cp;
+    u256 gasPrice;
+    bool isCreation;
+};
+
 /**
  * Model of an Ethereum state, essentially a facade for the trie.
  *
@@ -203,6 +210,9 @@ public:
     /// Execute a given transaction.
     /// This will change the state accordingly.
     std::pair<ExecutionResult, TransactionReceipt> execute(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Transaction const& _t, Permanence _p = Permanence::Committed, OnOpFunc const& _onOp = OnOpFunc());
+
+    /// ...
+    ExecutionResult executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p = Permanence::Committed);
 
     /// Execute @a _txCount transactions of a given block.
     /// This will change the state accordingly.

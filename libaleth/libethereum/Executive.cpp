@@ -22,18 +22,6 @@ namespace
 {
 Address const c_RipemdPrecompiledAddress{0x03};
 
-// std::string dumpStackAndMemory(LegacyVM const& _vm)
-// {
-//     ostringstream o;
-//     o << "\n    STACK\n";
-//     for (auto i : _vm.stack())
-//         o << (h256)i << "\n";
-//     o << "    MEMORY\n"
-//       << ((_vm.memory().size() > 1000) ? " mem size greater than 1000 bytes " :
-//                                          memDump(_vm.memory()));
-//     return o.str();
-// };
-
 std::string dumpStorage(ExtVM const& _ext)
 {
     ostringstream o;
@@ -176,6 +164,14 @@ bool Executive::execute()
         return create(m_t.sender(), m_t.value(), m_t.gasPrice(), m_t.gas() - (u256)m_baseGasRequired, &m_t.data(), m_t.sender());
     else
         return call(m_t.receiveAddress(), m_t.sender(), m_t.value(), m_t.gasPrice(), bytesConstRef(&m_t.data()), m_t.gas() - (u256)m_baseGasRequired);
+}
+
+bool Executive::executeMessage(Message const& _msg)
+{
+    if (_msg.isCreation)
+        return create(_msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.gas, _msg.cp.data, _msg.cp.senderAddress);
+    else
+        return call(_msg.cp, _msg.gasPrice, _msg.cp.senderAddress);
 }
 
 bool Executive::call(Address const& _receiveAddress, Address const& _senderAddress, u256 const& _value, u256 const& _gasPrice, bytesConstRef _data, u256 const& _gas)

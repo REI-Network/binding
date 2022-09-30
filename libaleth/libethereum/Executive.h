@@ -23,7 +23,7 @@ class Block;
 class BlockChain;
 class ExtVM;
 class SealEngineFace;
-struct Manifest;
+struct Message;
 
 /**
  * @brief Message-call/contract-creation executor; useful for executing transactions.
@@ -108,6 +108,9 @@ public:
     bool call(CallParameters const& _cp, u256 const& _gasPrice, Address const& _origin);
     /// Finalise an operation through accruing the substate into the parent context.
     void accrueSubState(SubState& _parentContext);
+
+    /// ...
+    bool executeMessage(Message const& _msg);
 
     /// Executes (or continues execution of) the VM.
     /// @returns false iff go() must be called again to finish the transaction.

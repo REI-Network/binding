@@ -719,6 +719,44 @@ bool State::executeTransaction(Executive& _e, Transaction const& _t, OnOpFunc co
     }
 }
 
+ExecutionResult State::executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p)
+{
+    // Create and initialize the executive. This will throw fairly cheaply and quickly if the
+    // transaction is bad in any way.
+    Executive e(*this, _envInfo, _sealEngine);
+    ExecutionResult res;
+    e.setResultRecipient(res);
+
+    size_t const savept = savepoint();
+    try
+    {
+        if (!e.executeMessage(_msg))
+            e.go();
+        e.finalize();
+    }
+    catch (Exception const&)
+    {
+        rollback(savept);
+        throw;
+    }
+
+    bool removeEmptyAccounts = false;
+    switch (_p)
+    {
+        case Permanence::Reverted:
+            m_cache.clear();
+            break;
+        case Permanence::Committed:
+            removeEmptyAccounts = _sealEngine.evmSchedule(_envInfo.number()).eip158Mode;
+            commit(removeEmptyAccounts ? State::CommitBehaviour::RemoveEmptyAccounts : State::CommitBehaviour::KeepEmptyAccounts);
+            break;
+        case Permanence::Uncommitted:
+            break;
+    }
+
+    return res;
+}
+
 bool State::accessAddress(Address const& _addr)
 {
     // clog(VerbosityError, "binding") << "accessAddress: " << toHex(_addr) << " " << isWarmedAddress(_addr);
