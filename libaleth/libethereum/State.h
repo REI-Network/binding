@@ -141,6 +141,7 @@ struct Message
     CallParameters cp;
     u256 gasPrice;
     bool isCreation;
+    boost::optional<AccessListStruct> accessList;
 };
 
 /**

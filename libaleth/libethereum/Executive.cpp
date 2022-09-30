@@ -127,6 +127,12 @@ void Executive::initialize(Transaction const& _transaction)
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
 
+    initializeAccessList(m_t.accessList(), m_t.sender(), m_t.to(), m_t.isCreation());
+}
+
+void Executive::initializeAccessList(AccessList const& _accessList, Address const& _from, Address const& _to, bool _isCreation)
+{
+    const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
     // EIP-2929 logic:
     // Mark tx.sender, tx.to and the set of all precompiles as warmed.
     if (schedule.eip2929Mode)
@@ -134,15 +140,15 @@ void Executive::initialize(Transaction const& _transaction)
         for (const auto& pair : schedule.supportedPrecompiled)
             if (pair.second)
                 m_s.accessAddress(pair.first);
-        m_s.accessAddress(m_t.sender());
-        if (!m_t.isCreation())
-            m_s.accessAddress(m_t.to());
+        m_s.accessAddress(_from);
+        if (!_isCreation)
+            m_s.accessAddress(_to);
     }
 
     // EIP-2930 logic:
     // Mark all addresses and storage in access list as warmed.
     if (m_t.isEIP2930Transaction())
-        m_t.traverseAccessList([this](const auto& _addr, const auto& _keys)
+        _accessList.forEach([this](const auto& _addr, const auto& _keys)
         {
             m_s.accessAddress(_addr);
             for (const auto& key : _keys)

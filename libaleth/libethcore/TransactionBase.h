@@ -143,8 +143,6 @@ public:
     /// @returns true if the transaction is an EIP2930 transaction
     bool isEIP2930Transaction() const { return m_txType == TransactionType::AccessListEIP2930; }
 
-    void traverseAccessList(std::function<void(Address const&, u256s const&)> const& cb) const { if (m_accessList.has_value()) m_accessList->forEach(cb); }
-
     /// @returns the signature of the transaction (the signature has the sender encoded in it)
     /// @throws TransactionIsUnsigned if signature was not initialized
     SignatureStruct const& signature() const;
@@ -157,6 +155,9 @@ public:
 
     /// @returns amount of gas required for the basic payment.
     int64_t baseGasRequired(EVMSchedule const& _es) const;
+
+    /// @returns Access list of EIP2930 transaction
+    const AccessList& accessList() const { return *m_accessList; }
 
 protected:
     /// Type of transaction.

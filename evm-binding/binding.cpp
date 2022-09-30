@@ -410,6 +410,17 @@ h256s toH256s(const Napi::Value &value)
     return hashes;
 }
 
+bool toBool(const Napi::Value &value)
+{
+    if (value.IsBoolean())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return false;
+    }
+
+    return value.As<Napi::Boolean>().Value();
+}
+
 LastBlockHashesLoader toLoader(const Napi::Value &value)
 {
     if (!value.IsFunction())
@@ -424,6 +435,7 @@ LastBlockHashesLoader toLoader(const Napi::Value &value)
 AccessListStruct toAccessList(const Napi::Value &value)
 {
     AccessListStruct accessList;
+
     if (!value.IsArray())
     {
         Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
@@ -533,6 +545,34 @@ BlockHeader toHeader(const Napi::Value &value)
         Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
         return BlockHeader{};
     }
+}
+
+Message toMessage(const Napi::Value &value)
+{
+    if (!value.IsObject())
+    {
+        Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
+        return Message{};
+    }
+
+    auto obj = value.As<Napi::Object>();
+
+    Message msg;
+    msg.cp.senderAddress = toAddress(obj.Get("caller"));
+    msg.cp.receiveAddress = toAddress(obj.Get("to"));
+    msg.cp.codeAddress = msg.cp.receiveAddress;
+    msg.cp.valueTransfer = toU256(obj.Get("value"));
+    msg.cp.apparentValue = msg.cp.valueTransfer;
+    msg.cp.gas = toU256(obj.Get("gasLimit"));
+    msg.cp.data = toBytesConstRef(obj.Get("data"));
+    msg.cp.staticCall = toBool(obj.Get("isStatic"));
+    msg.gasPrice = toU256(obj.Get("gasPrice"));
+    msg.isCreation = toBool(obj.Get("isCreation"));
+    auto accessListValue = obj.Get("accessList");
+    if (!accessListValue.IsUndefined() && !accessListValue.IsNull())
+        msg.accessList = toAccessList(accessListValue);
+
+    return msg;
 }
 
 class LastBlockHashes : public LastBlockHashesFace
