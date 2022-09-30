@@ -559,7 +559,7 @@ Message toMessage(const Napi::Value &value)
 
     Message msg;
     msg.cp.senderAddress = toAddress(obj.Get("caller"));
-    msg.cp.receiveAddress = toAddress(obj.Get("to"));
+    msg.cp.receiveAddress = toAddress(obj.Get("to"), ZeroAddress);
     msg.cp.codeAddress = msg.cp.receiveAddress;
     msg.cp.valueTransfer = toU256(obj.Get("value"));
     msg.cp.apparentValue = msg.cp.valueTransfer;
@@ -705,6 +705,32 @@ class EVMBinding
     {
         auto [newStateRoot, result, receipt] = run(stateRoot, header, tx, gasUsed, loader, Permanence::Reverted);
         return result.output;
+    }
+
+    /**
+     * Execute message.
+     * @param stateRoot - Previous state root hash
+     * @param header - Block header
+     * @param msg - Message
+     * @param gasUsed - Gas used
+     * @param loader - A function used to load block hash
+     * @return Execution result
+     */
+    ExecutionResult runMessage(const h256 &stateRoot, const BlockHeader &header, const Message &msg,
+                               const u256 &gasUsed, LastBlockHashes loader)
+    {
+        createStateIfNotExsits();
+
+        // create env info object
+        EnvInfo envInfo(header, LastBlockHashes(loader), gasUsed, m_params.chainID);
+        // reset state root
+        m_state->setRoot(stateRoot);
+        // execute transaction
+        auto result = m_state->executeMessage(envInfo, *m_engine, msg);
+        // commit data to db
+        m_state->db().commit();
+
+        return result;
     }
 
   private:
@@ -932,6 +958,32 @@ class JSEVMBinding : public Napi::ObjectWrap<JSEVMBinding>
             auto [stateRoot, header, tx, gasUsed, loader] = params;
             auto output = m_binding->runCall(stateRoot, header, tx, gasUsed, loader);
             return toNapiValue(info.Env(), output);
+        });
+    }
+
+    /**
+     * Execute message.
+     * @param info - Napi callback info
+     * @param info_0 - Previous state root hash
+     * @param info_1 - RLP encoded block header or header object
+     * @param info_2 - Message object
+     * @param info_3 - Gas used
+     * @param info_4 - A function used to load block hash
+     * @return Contract output
+     */
+    Napi::Value runMessage(const Napi::CallbackInfo &info)
+    {
+        // parse input params
+        auto stateRoot = toH256(info[0]);
+        auto header = toHeader(info[1]);
+        auto msg = toMessage(info[2]);
+        auto gasUsed = toU256(info[3]);
+        auto loader = toLoader(info[4]);
+
+        // invoke cpp impl
+        return executeUnderTryCatch(info.Env(), [&, this]() {
+            auto result = m_binding->runMessage(stateRoot, header, msg, gasUsed, loader);
+            return toNapiValue(info.Env(), result);
         });
     }
 

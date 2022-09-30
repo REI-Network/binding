@@ -30,6 +30,20 @@ export type Transaction = {
   to?: string;
 };
 
+export type AccessList = [string, string[]][];
+
+export type Message = {
+  caller: string;
+  to?: string;
+  value: string | number;
+  gasLimit: string | number;
+  data: Buffer;
+  isStatic: boolean;
+  gasPrice: string | number;
+  isCreation: boolean;
+  accessList?: AccessList;
+};
+
 export type ExecutionResult = {
   gasUsed: string;
   excepted?: { error: string };
@@ -120,4 +134,20 @@ export declare class JSEVMBinding {
     gasUsed: string | number,
     loader: LastBlockHashesLoader
   ): string;
+
+  /**
+   * Execute message.
+   * @param stateRoot - Previous state root hash
+   * @param header - RLP encoded block header or header object
+   * @param message - Message object
+   * @param gasUsed - Gas used
+   * @param loader - A function used to load block hash
+   */
+  runMessage(
+    stateRoot: string,
+    header: Buffer | BlockHeader,
+    message: Message,
+    gasUsed: string | number,
+    loader: LastBlockHashesLoader
+  ): ExecutionResult;
 }

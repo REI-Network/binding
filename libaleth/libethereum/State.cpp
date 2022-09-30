@@ -297,6 +297,7 @@ std::pair<State::AddressMap, h256> State::addresses(
 void State::setRoot(h256 const& _r)
 {
     m_cache.clear();
+    m_warmed.clear();
     m_unchangedCacheEntries.clear();
     m_nonExistingAccountsCache.clear();
 //  m_touched.clear();
