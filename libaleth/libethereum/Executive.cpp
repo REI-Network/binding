@@ -65,7 +65,7 @@ u256 Executive::gasUsed() const
     else if (m_msg.has_value())
         return m_msg->cp.gas - m_gas;
     else
-        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx and msg"));
+        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx or msg"));
 }
 
 void Executive::accrueSubState(SubState& _parentContext)
@@ -197,7 +197,7 @@ bool Executive::execute()
             return call(_msg.cp, _msg.gasPrice, _msg.cp.senderAddress);
     }
     else
-        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx and msg"));
+        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx or msg"));
 }
 
 bool Executive::call(Address const& _receiveAddress, Address const& _senderAddress, u256 const& _value, u256 const& _gasPrice, bytesConstRef _data, u256 const& _gas)
@@ -495,10 +495,10 @@ bool Executive::finalize()
         else if (m_msg.has_value())
             gas = m_msg->cp.gas;
         else
-            BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx and msg"));
+            BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx or msg"));
 
         int64_t maxRefund = (static_cast<int64_t>(gas) - static_cast<int64_t>(m_gas)) / 2;
-        std::cout << "refund: " << min(maxRefund, m_ext->sub.refunds) << " " << m_ext->sub.refunds << " size: " << m_ext->sub.selfdestructs.size() << std::endl;
+        // std::cout << "refund: " << min(maxRefund, m_ext->sub.refunds) << " " << m_ext->sub.refunds << " size: " << m_ext->sub.selfdestructs.size() << std::endl;
         m_gas += min(maxRefund, m_ext->sub.refunds);
     }
 
