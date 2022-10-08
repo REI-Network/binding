@@ -7,11 +7,9 @@
 #include "BlockChain.h"
 #include "ExtVM.h"
 #include "Interface.h"
-// #include "StandardTrace.h"
 #include "State.h"
 #include <libdevcore/CommonIO.h>
 #include <libethcore/CommonJS.h>
-// #include <libevm/LegacyVM.h>
 #include <libevm/VMFactory.h>
 
 using namespace std;
@@ -138,6 +136,7 @@ void Executive::initialize(Transaction const& _transaction)
 void Executive::initialize(Message const& _msg)
 {
     m_msg = _msg;
+    m_baseGasRequired = _msg.baseFee.convert_to<int64_t>();
 
     boost::optional<AccessList> accessList;
     if (_msg.accessList.has_value())
@@ -191,10 +190,12 @@ bool Executive::execute()
     else if (m_msg.has_value())
     {
         auto const& _msg = *m_msg;
+        
+        assert(_msg.cp.gas >= (u256)m_baseGasRequired);
         if (_msg.isCreation)
-            return create(_msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.gas, _msg.cp.data, _msg.cp.senderAddress);
+            return create(_msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.gas - (u256)m_baseGasRequired, _msg.cp.data, _msg.cp.senderAddress);
         else
-            return call(_msg.cp, _msg.gasPrice, _msg.cp.senderAddress);
+            return call(_msg.cp.receiveAddress, _msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.data, _msg.cp.gas - (u256)m_baseGasRequired);
     }
     else
         BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx or msg"));
@@ -493,7 +494,7 @@ bool Executive::finalize()
         if (m_t)
             gas = m_t.gas();
         else if (m_msg.has_value())
-            gas = m_msg->baseFee + m_msg->cp.gas;
+            gas = m_msg->cp.gas;
         else
             BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx or msg"));
 
