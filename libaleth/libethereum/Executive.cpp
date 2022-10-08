@@ -488,8 +488,17 @@ bool Executive::finalize()
 
         // Refunds must be applied before the miner gets the fees.
         assert(m_ext->sub.refunds >= 0);
-        int64_t maxRefund = (static_cast<int64_t>(m_t.gas()) - static_cast<int64_t>(m_gas)) / 2;
-        // std::cout << "refund: " << min(maxRefund, m_ext->sub.refunds) << " " << m_ext->sub.refunds << " size: " << m_ext->sub.selfdestructs.size() << std::endl;
+
+        u256 gas;
+        if (m_t)
+            gas = m_t.gas();
+        else if (m_msg.has_value())
+            gas = m_msg->cp.gas;
+        else
+            BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx and msg"));
+
+        int64_t maxRefund = (static_cast<int64_t>(gas) - static_cast<int64_t>(m_gas)) / 2;
+        std::cout << "refund: " << min(maxRefund, m_ext->sub.refunds) << " " << m_ext->sub.refunds << " size: " << m_ext->sub.selfdestructs.size() << std::endl;
         m_gas += min(maxRefund, m_ext->sub.refunds);
     }
 
