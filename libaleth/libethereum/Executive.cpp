@@ -209,7 +209,7 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
     // If external transaction.
-    if (m_t)
+    if (m_t || m_msg.has_value())
     {
         // FIXME: changelog contains unrevertable balance change that paid
         //        for the transaction.
