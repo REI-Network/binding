@@ -726,7 +726,7 @@ class EVMBinding
         // reset state root
         m_state->setRoot(stateRoot);
         // execute transaction
-        auto [result, logs] = m_state->executeMessage(envInfo, *m_engine, msg);
+        auto [result, logs] = m_state->execute(envInfo, *m_engine, msg);
         // commit data to db
         m_state->db().commit();
 

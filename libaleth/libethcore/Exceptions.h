@@ -101,5 +101,7 @@ DEV_SIMPLE_EXCEPTION(TransactionRefused);
 DEV_SIMPLE_EXCEPTION(UnknownAccount);
 
 DEV_SIMPLE_EXCEPTION(PeerDisconnected);
+
+DEV_SIMPLE_EXCEPTION(ExecutionFailed);
 }
 }

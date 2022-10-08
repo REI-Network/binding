@@ -9,6 +9,7 @@
 #include "SecureTrieDB.h"
 #include "Transaction.h"
 #include "TransactionReceipt.h"
+#include "Message.h"
 #include <libdevcore/Common.h>
 #include <libdevcore/OverlayDB.h>
 #include <libdevcore/RLP.h>
@@ -136,14 +137,6 @@ struct Change
 
 using ChangeLog = std::vector<Change>;
 
-struct Message
-{
-    CallParameters cp;
-    u256 gasPrice;
-    bool isCreation;
-    boost::optional<AccessListStruct> accessList;
-};
-
 /**
  * Model of an Ethereum state, essentially a facade for the trie.
  *
@@ -212,8 +205,9 @@ public:
     /// This will change the state accordingly.
     std::pair<ExecutionResult, TransactionReceipt> execute(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Transaction const& _t, Permanence _p = Permanence::Committed, OnOpFunc const& _onOp = OnOpFunc());
 
-    /// ...
-    std::pair<ExecutionResult, LogEntries> executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p = Permanence::Committed);
+    /// Execute a given message.
+    /// This will change the state accordingly.
+    std::pair<ExecutionResult, LogEntries> execute(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg);
 
     /// Execute @a _txCount transactions of a given block.
     /// This will change the state accordingly.

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Transaction.h"
+#include "Message.h"
 #include <libdevcore/Log.h>
 #include <libethcore/Common.h>
 #include <libevm/ExtVMFace.h>
@@ -76,6 +77,8 @@ public:
     /// Initializes the executive for evaluating a transaction. You must call finalize() at some point following this.
     void initialize(bytesConstRef _transaction) { initialize(Transaction(_transaction, CheckTransaction::None)); }
     void initialize(Transaction const& _transaction);
+    /// ...
+    void initialize(Message const& _msg);
     /// Finalise a transaction previously set up with initialize().
     /// @warning Only valid after initialize() and execute(), and possibly go().
     /// @returns true if the outermost execution halted normally, false if exceptionally halted.
@@ -108,11 +111,6 @@ public:
     bool call(CallParameters const& _cp, u256 const& _gasPrice, Address const& _origin);
     /// Finalise an operation through accruing the substate into the parent context.
     void accrueSubState(SubState& _parentContext);
-
-    /// ...
-    void initializeAccessList(boost::optional<AccessList> const& _accessList, Address const& _from, Address const& _to, bool _isCreation);
-    /// ...
-    bool executeMessage(Message const& _msg);
 
     /// Executes (or continues execution of) the VM.
     /// @returns false iff go() must be called again to finish the transaction.
@@ -147,6 +145,8 @@ private:
     /// @returns false iff go() must be called (and thus a VM execution in required).
     bool executeCreate(Address const& _txSender, u256 const& _endowment, u256 const& _gasPrice,
         u256 const& _gas, bytesConstRef _code, Address const& _originAddress, u256 const& _version);
+    /// ...
+    void initializeAccessList(boost::optional<AccessList> const& _accessList, Address const& _from, Address const& _to, bool _isCreation);
 
     State& m_s;							///< The state to which this operation/transaction is applied.
     // TODO: consider changign to EnvInfo const& to avoid LastHashes copy at every CALL/CREATE
@@ -161,6 +161,7 @@ private:
     u256 m_gas = 0;						///< The gas for EVM code execution. Initial amount before go() execution, final amount after go() execution.
 
     Transaction m_t;					///< The original transaction. Set by setup().
+    boost::optional<Message> m_msg;     ///< ...
     LogEntries m_logs;					///< The log entries created by this transaction. Set by finalize().
 
     u256 m_gasCost;

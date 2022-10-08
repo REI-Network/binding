@@ -60,7 +60,12 @@ Executive::Executive(
 
 u256 Executive::gasUsed() const
 {
-    return m_t.gas() - m_gas;
+    if (m_t)
+        return m_t.gas() - m_gas;
+    else if (m_msg.has_value())
+        return m_msg->cp.gas - m_gas;
+    else
+        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx and msg"));
 }
 
 void Executive::accrueSubState(SubState& _parentContext)
@@ -130,6 +135,16 @@ void Executive::initialize(Transaction const& _transaction)
     initializeAccessList(m_t.accessList(), m_t.sender(), m_t.to(), m_t.isCreation());
 }
 
+void Executive::initialize(Message const& _msg)
+{
+    m_msg = _msg;
+
+    boost::optional<AccessList> accessList;
+    if (_msg.accessList.has_value())
+        accessList = AccessList{*_msg.accessList};
+    initializeAccessList(accessList, _msg.cp.senderAddress, _msg.cp.receiveAddress, _msg.isCreation);
+}
+
 void Executive::initializeAccessList(boost::optional<AccessList> const& _accessList, Address const& _from, Address const& _to, bool _isCreation)
 {
     const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
@@ -158,26 +173,31 @@ void Executive::initializeAccessList(boost::optional<AccessList> const& _accessL
 
 bool Executive::execute()
 {
-    // Entry point for a user-executed transaction.
+    if (m_t)
+    {
+        // Entry point for a user-executed transaction.
 
-    // Pay...
-    LOG(m_detailsLogger) << "Paying " << formatBalance(m_gasCost) << " from sender for gas ("
-                         << m_t.gas() << " gas at " << formatBalance(m_t.gasPrice()) << ")";
-    m_s.subBalance(m_t.sender(), m_gasCost);
+        // Pay...
+        LOG(m_detailsLogger) << "Paying " << formatBalance(m_gasCost) << " from sender for gas ("
+                            << m_t.gas() << " gas at " << formatBalance(m_t.gasPrice()) << ")";
+        m_s.subBalance(m_t.sender(), m_gasCost);
 
-    assert(m_t.gas() >= (u256)m_baseGasRequired);
-    if (m_t.isCreation())
-        return create(m_t.sender(), m_t.value(), m_t.gasPrice(), m_t.gas() - (u256)m_baseGasRequired, &m_t.data(), m_t.sender());
+        assert(m_t.gas() >= (u256)m_baseGasRequired);
+        if (m_t.isCreation())
+            return create(m_t.sender(), m_t.value(), m_t.gasPrice(), m_t.gas() - (u256)m_baseGasRequired, &m_t.data(), m_t.sender());
+        else
+            return call(m_t.receiveAddress(), m_t.sender(), m_t.value(), m_t.gasPrice(), bytesConstRef(&m_t.data()), m_t.gas() - (u256)m_baseGasRequired);
+    }
+    else if (m_msg.has_value())
+    {
+        auto const& _msg = *m_msg;
+        if (_msg.isCreation)
+            return create(_msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.gas, _msg.cp.data, _msg.cp.senderAddress);
+        else
+            return call(_msg.cp, _msg.gasPrice, _msg.cp.senderAddress);
+    }
     else
-        return call(m_t.receiveAddress(), m_t.sender(), m_t.value(), m_t.gasPrice(), bytesConstRef(&m_t.data()), m_t.gas() - (u256)m_baseGasRequired);
-}
-
-bool Executive::executeMessage(Message const& _msg)
-{
-    if (_msg.isCreation)
-        return create(_msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.gas, _msg.cp.data, _msg.cp.senderAddress);
-    else
-        return call(_msg.cp, _msg.gasPrice, _msg.cp.senderAddress);
+        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx and msg"));
 }
 
 bool Executive::call(Address const& _receiveAddress, Address const& _senderAddress, u256 const& _value, u256 const& _gasPrice, bytesConstRef _data, u256 const& _gas)

@@ -51,6 +51,7 @@ add_library(
     LastBlockHashesFace.h
     LogFilter.cpp
     LogFilter.h
+    Message.h
     SecureTrieDB.h
     # SnapshotImporter.cpp
     # SnapshotImporter.h

@@ -720,7 +720,7 @@ bool State::executeTransaction(Executive& _e, Transaction const& _t, OnOpFunc co
     }
 }
 
-std::pair<ExecutionResult, LogEntries> State::executeMessage(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg, Permanence _p)
+std::pair<ExecutionResult, LogEntries> State::execute(EnvInfo const& _envInfo, SealEngineFace const& _sealEngine, Message const& _msg)
 {
     // Create and initialize the executive. This will throw fairly cheaply and quickly if the
     // transaction is bad in any way.
@@ -731,12 +731,9 @@ std::pair<ExecutionResult, LogEntries> State::executeMessage(EnvInfo const& _env
     size_t const savept = savepoint();
     try
     {
-        boost::optional<AccessList> accessList;
-        if (_msg.accessList.has_value())
-            accessList = AccessList{*_msg.accessList};
-        e.initializeAccessList(accessList, _msg.cp.senderAddress, _msg.cp.receiveAddress, _msg.isCreation);
+        e.initialize(_msg);
 
-        if (!e.executeMessage(_msg))
+        if (!e.execute())
             e.go();
         e.finalize();
     }
@@ -746,18 +743,12 @@ std::pair<ExecutionResult, LogEntries> State::executeMessage(EnvInfo const& _env
         throw;
     }
 
-    bool removeEmptyAccounts = false;
-    switch (_p)
+    if (_msg.cp.staticCall)
+        m_cache.clear();
+    else
     {
-        case Permanence::Reverted:
-            m_cache.clear();
-            break;
-        case Permanence::Committed:
-            removeEmptyAccounts = _sealEngine.evmSchedule(_envInfo.number()).eip158Mode;
-            commit(removeEmptyAccounts ? State::CommitBehaviour::RemoveEmptyAccounts : State::CommitBehaviour::KeepEmptyAccounts);
-            break;
-        case Permanence::Uncommitted:
-            break;
+        bool removeEmptyAccounts = _sealEngine.evmSchedule(_envInfo.number()).eip158Mode;
+        commit(removeEmptyAccounts ? State::CommitBehaviour::RemoveEmptyAccounts : State::CommitBehaviour::KeepEmptyAccounts);
     }
 
     return make_pair(res, e.logs());
