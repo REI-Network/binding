@@ -1,7 +1,5 @@
 module.exports = require("bindings")("evm-binding");
 
-export type JSEVMGlobalInit = () => void;
-
 export type LastBlockHashesLoader = () => (string | Buffer)[];
 
 export type BlockHeader = {
@@ -39,6 +37,7 @@ export type Message = {
   gasLimit: string | number;
   data: Buffer;
   isStatic: boolean;
+  baseFee: string | number;
   gasPrice: string | number;
   isCreation: boolean;
   accessList?: AccessList;
@@ -66,7 +65,7 @@ export type TransactionReceipt = {
   stateRoot?: string;
 };
 
-export declare const init: JSEVMGlobalInit;
+export declare const init: () => void;
 
 export declare class JSEVMBinding {
   /**

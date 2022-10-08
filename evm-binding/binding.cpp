@@ -207,7 +207,8 @@ u256 toU256(const Napi::Value &value, std::optional<u256> defaultValue = {})
 {
     if (value.IsString())
     {
-        return u256{fromHex(value.As<Napi::String>())};
+        std::string string = value.As<Napi::String>();
+        return string.rfind("0x", 0) == 0 ? u256{fromHex(string)} : u256{string};
     }
     else if (value.IsNumber())
     {
@@ -566,6 +567,7 @@ Message toMessage(const Napi::Value &value)
     msg.cp.gas = toU256(obj.Get("gasLimit"));
     msg.cp.data = toBytesConstRef(obj.Get("data"));
     msg.cp.staticCall = toBool(obj.Get("isStatic"));
+    msg.baseFee = toU256(obj.Get("baseFee"));
     msg.gasPrice = toU256(obj.Get("gasPrice"));
     msg.isCreation = toBool(obj.Get("isCreation"));
     auto accessListValue = obj.Get("accessList");

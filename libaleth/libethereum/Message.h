@@ -14,6 +14,7 @@ namespace eth
 struct Message
 {
     CallParameters cp;
+    u256 baseFee;
     u256 gasPrice;
     bool isCreation;
     boost::optional<AccessListStruct> accessList;
