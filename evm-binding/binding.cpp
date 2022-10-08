@@ -412,7 +412,7 @@ h256s toH256s(const Napi::Value &value)
 
 bool toBool(const Napi::Value &value)
 {
-    if (value.IsBoolean())
+    if (!value.IsBoolean())
     {
         Napi::TypeError::New(value.Env(), "Wrong arguments").ThrowAsJavaScriptException();
         return false;
