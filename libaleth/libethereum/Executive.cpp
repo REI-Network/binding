@@ -194,6 +194,8 @@ bool Executive::execute()
         assert(_msg.cp.gas >= (u256)m_baseGasRequired);
         if (_msg.isCreation)
             return create(_msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.gas - (u256)m_baseGasRequired, _msg.cp.data, _msg.cp.senderAddress);
+        else if (_msg.isUpgrade)
+            return upgrade(_msg.cp.senderAddress, _msg.cp.receiveAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.gas - (u256)m_baseGasRequired, _msg.cp.data, _msg.cp.senderAddress, _msg.clearStorage);
         else
             return call(_msg.cp.receiveAddress, _msg.cp.senderAddress, _msg.cp.valueTransfer, _msg.gasPrice, _msg.cp.data, _msg.cp.gas - (u256)m_baseGasRequired);
     }
@@ -285,6 +287,14 @@ bool Executive::create(Address const& _txSender, u256 const& _endowment, u256 co
         _txSender, _endowment, _gasPrice, _gas, _init, _origin, latestVersion);
 }
 
+bool Executive::upgrade(Address const& _sender, Address const& _receiver, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin, bool _clearStorage)
+{
+    // Contract will be created with the version corresponding to latest hard fork
+    auto const latestVersion = m_sealEngine.evmSchedule(m_envInfo.number()).accountVersion;
+    return upgradeWithAddressFromReceiveAddress(
+        _sender, _receiver, _endowment, _gasPrice, _gas, _init, _origin, _clearStorage, latestVersion);
+}
+
 bool Executive::createOpcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin)
 {
     // Contract will be created with the version equal to parent's version
@@ -299,6 +309,13 @@ bool Executive::createWithAddressFromNonceAndSender(Address const& _sender, u256
     u256 nonce = m_s.getNonce(_sender);
     m_newAddress = right160(sha3(rlpList(_sender, nonce)));
     return executeCreate(_sender, _endowment, _gasPrice, _gas, _init, _origin, _version);
+}
+
+bool Executive::upgradeWithAddressFromReceiveAddress(Address const& _sender, Address const& _receiver, u256 const& _endowment,
+    u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin, bool _clearStorage, u256 const& _version)
+{
+    m_newAddress = _receiver;
+    return executeUpgrade(_sender, _endowment, _gasPrice, _gas, _init, _origin, _clearStorage, _version);
 }
 
 bool Executive::create2Opcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin, u256 const& _salt)
@@ -360,6 +377,70 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u2
     else
         // code stays empty, but we set the version
         m_s.setCode(m_newAddress, {}, _version);
+
+    return !m_ext;
+}
+
+bool Executive::executeUpgrade(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice,
+    u256 const& _gas, bytesConstRef _init, Address const& _origin, bool _clearStorage, u256 const& _version)
+{
+    if (m_t || !m_msg.has_value())
+        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("tx cannot upgrade contract or missing msg"));
+
+    const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
+    if (schedule.eip2929Mode)
+        m_s.accessAddress(m_newAddress);
+
+    m_savepoint = m_s.savepoint();
+
+    bool exist = m_s.accountNonemptyAndExisting(m_newAddress);
+
+    if (!exist)
+    {
+        m_isCreation = true;
+
+        // We can allow for the reverted state (i.e. that with which m_ext is constructed) to contain the m_orig.address, since
+        // we delete it explicitly if we decide we need to revert.
+
+        m_gas = _gas;
+
+        // Transfer ether before deploying the code. This will also create new
+        // account if it does not exist yet.
+        m_s.transferBalance(_sender, m_newAddress, _endowment);
+
+        u256 newNonce = m_s.requireAccountStartNonce();
+        if (schedule.eip158Mode)
+            newNonce += 1;
+        m_s.setNonce(m_newAddress, newNonce);
+
+        m_s.clearStorage(m_newAddress);
+
+        // Schedule _init execution if not empty.
+        if (!_init.empty())
+            m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin,
+                _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), _version, m_depth, true,
+                false);
+        else
+            // code stays empty, but we set the version
+            m_s.setCode(m_newAddress, {}, _version);
+    }
+    else
+    {
+        if (!m_s.addressHasCode(m_newAddress))
+        {
+            LOG(m_detailsLogger) << "Invalid upgrade: " << m_newAddress;
+            m_gas = 0;
+            m_excepted = TransactionException::AddressAlreadyUsed;
+            revert();
+            m_ext = {}; // cancel the _init execution if there are any scheduled.
+            return !m_ext;
+        }
+
+        if (_clearStorage)
+            m_s.clearStorage(m_newAddress);
+
+        m_s.setCode(m_newAddress, _init.toBytes(), _version);
+    }
 
     return !m_ext;
 }

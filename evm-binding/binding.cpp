@@ -570,6 +570,8 @@ Message toMessage(const Napi::Value &value)
     msg.baseFee = toU256(obj.Get("baseFee"));
     msg.gasPrice = toU256(obj.Get("gasPrice"));
     msg.isCreation = toBool(obj.Get("isCreation"));
+    msg.isUpgrade = toBool(obj.Get("isUpgrade"));
+    msg.clearStorage = toBool(obj.Get("clearStorage"));
     auto accessListValue = obj.Get("accessList");
     if (!accessListValue.IsUndefined() && !accessListValue.IsNull())
         msg.accessList = toAccessList(accessListValue);

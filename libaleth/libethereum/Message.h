@@ -17,6 +17,8 @@ struct Message
     u256 baseFee;
     u256 gasPrice;
     bool isCreation;
+    bool isUpgrade;
+    bool clearStorage;
     boost::optional<AccessListStruct> accessList;
 };
 

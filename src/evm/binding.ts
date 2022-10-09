@@ -40,6 +40,8 @@ export type Message = {
   baseFee: string | number;
   gasPrice: string | number;
   isCreation: boolean;
+  isUpgrade: boolean;
+  clearStorage: boolean;
   accessList?: AccessList;
 };
 

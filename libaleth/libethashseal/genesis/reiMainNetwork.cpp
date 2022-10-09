@@ -4,8 +4,8 @@
 
 #include "../GenesisInfo.h"
 
-static dev::h256 const c_genesisStateRootREIDevNetwork("b7b7c6d4fe03e627d8f51a68cacf12b30d6182b59f3c97eb013517b6436b48a0");
-static std::string const c_genesisInfoREIDevNetwork = std::string() +
+static dev::h256 const c_genesisStateRootREIMainNetwork("2fa2d04b5f646c95f481ae147b4188b9294d9f6b2f97eaa3509186159acde524");
+static std::string const c_genesisInfoREIMainNetwork = std::string() +
                                                     R"E(
 {
     "sealEngine": "NoProof",
@@ -21,8 +21,8 @@ static std::string const c_genesisInfoREIDevNetwork = std::string() +
         "istanbulForkBlock": "0x00",
         "muirGlacierForkBlock": "0x00",
         "berlinForkBlock": "0x00",
-        "networkID" : "0x5c1b",
-        "chainID": "0x5c1b",
+        "networkID" : "0xbabd",
+        "chainID": "0xbabd",
         "maximumExtraDataSize": "0x2000",
         "tieBreakingGas": false,
         "minGasLimit": "0x1388",

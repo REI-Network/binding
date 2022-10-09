@@ -105,6 +105,8 @@ public:
     bool createOpcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _code, Address const& _originAddress);
     /// @returns false iff go() must be called (and thus a VM execution in required).
     bool create2Opcode(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _code, Address const& _originAddress, u256 const& _salt);
+    /// @returns false iff go() must be called (and thus a VM execution in required).
+    bool upgrade(Address const& _sender, Address const& _receiver, u256 const& _endowment, u256 const& _gasPrice, u256 const& _gas, bytesConstRef _code, Address const& _originAddress, bool _clearStorage);
     /// Set up the executive for evaluating a bare CALL (message call) operation.
     /// @returns false iff go() must be called (and thus a VM execution in required).
     bool call(Address const& _receiveAddress, Address const& _txSender, u256 const& _txValue, u256 const& _gasPrice, bytesConstRef _txData, u256 const& _gas);
@@ -145,6 +147,12 @@ private:
     /// @returns false iff go() must be called (and thus a VM execution in required).
     bool executeCreate(Address const& _txSender, u256 const& _endowment, u256 const& _gasPrice,
         u256 const& _gas, bytesConstRef _code, Address const& _originAddress, u256 const& _version);
+    /// @returns false iff go() must be called (and thus a VM execution in required).
+    bool upgradeWithAddressFromReceiveAddress(Address const& _sender, Address const& _receiver, u256 const& _endowment,
+        u256 const& _gasPrice, u256 const& _gas, bytesConstRef _init, Address const& _origin, bool _clearStorage, u256 const& _version);
+    /// @returns false iff go() must be called (and thus a VM execution in required).
+    bool executeUpgrade(Address const& _txSender, u256 const& _endowment, u256 const& _gasPrice,
+        u256 const& _gas, bytesConstRef _code, Address const& _originAddress, bool _clearStorage, u256 const& _version);
     /// ...
     void initializeAccessList(boost::optional<AccessList> const& _accessList, Address const& _from, Address const& _to, bool _isCreation);
 
