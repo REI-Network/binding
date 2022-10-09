@@ -19,6 +19,7 @@ struct Message
     bool isCreation;
     bool isUpgrade;
     bool clearStorage;
+    bool clearEmptyAccount;
     boost::optional<AccessListStruct> accessList;
 };
 

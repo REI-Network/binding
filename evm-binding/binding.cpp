@@ -572,6 +572,7 @@ Message toMessage(const Napi::Value &value)
     msg.isCreation = toBool(obj.Get("isCreation"));
     msg.isUpgrade = toBool(obj.Get("isUpgrade"));
     msg.clearStorage = toBool(obj.Get("clearStorage"));
+    msg.clearEmptyAccount = toBool(obj.Get("clearEmptyAccount"));
     auto accessListValue = obj.Get("accessList");
     if (!accessListValue.IsUndefined() && !accessListValue.IsNull())
         msg.accessList = toAccessList(accessListValue);
@@ -731,8 +732,8 @@ class EVMBinding
         m_state->setRoot(stateRoot);
         // execute transaction
         auto [result, logs] = m_state->execute(envInfo, *m_engine, msg);
-        // commit data to db
-        m_state->db().commit();
+        // rollback or commit data to db
+        msg.cp.staticCall ? m_state->db().rollback() : m_state->db().commit();
 
         return std::make_tuple(m_state->rootHash(), std::move(result), std::move(logs));
     }

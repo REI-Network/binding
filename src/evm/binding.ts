@@ -42,6 +42,7 @@ export type Message = {
   isCreation: boolean;
   isUpgrade: boolean;
   clearStorage: boolean;
+  clearEmptyAccount: boolean;
   accessList?: AccessList;
 };
 

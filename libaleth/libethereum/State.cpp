@@ -746,10 +746,7 @@ std::pair<ExecutionResult, LogEntries> State::execute(EnvInfo const& _envInfo, S
     if (_msg.cp.staticCall)
         m_cache.clear();
     else
-    {
-        bool removeEmptyAccounts = _sealEngine.evmSchedule(_envInfo.number()).eip158Mode;
-        commit(removeEmptyAccounts ? State::CommitBehaviour::RemoveEmptyAccounts : State::CommitBehaviour::KeepEmptyAccounts);
-    }
+        commit(_msg.clearEmptyAccount ? State::CommitBehaviour::RemoveEmptyAccounts : State::CommitBehaviour::KeepEmptyAccounts);
 
     return make_pair(res, e.logs());
 }
