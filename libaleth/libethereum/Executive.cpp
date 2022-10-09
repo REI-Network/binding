@@ -61,7 +61,7 @@ u256 Executive::gasUsed() const
     if (m_t)
         return m_t.gas() - m_gas;
     else if (m_msg.has_value())
-        return m_msg->cp.gas - m_gas;
+        return m_msg->cp.gas - m_gas - m_msg->baseFee;
     else
         BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx or msg"));
 }
@@ -210,7 +210,7 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
     // If external transaction.
-    if (m_t || m_msg.has_value())
+    if (m_t)
     {
         // FIXME: changelog contains unrevertable balance change that paid
         //        for the transaction.
@@ -312,8 +312,10 @@ bool Executive::create2Opcode(Address const& _sender, u256 const& _endowment, u2
 bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u256 const& _gasPrice,
     u256 const& _gas, bytesConstRef _init, Address const& _origin, u256 const& _version)
 {
-    if (_sender != MaxAddress ||
-        m_envInfo.number() < m_sealEngine.chainParams().experimentalForkBlock)  // EIP86
+    // If this is a message call,
+    // the nonce will be handled externally and does not need to be incremented
+    if (!m_msg.has_value() && (_sender != MaxAddress ||
+        m_envInfo.number() < m_sealEngine.chainParams().experimentalForkBlock))  // EIP86
         m_s.incNonce(_sender);
 
     const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
@@ -490,17 +492,17 @@ bool Executive::finalize()
         // Refunds must be applied before the miner gets the fees.
         assert(m_ext->sub.refunds >= 0);
 
-        u256 gas;
-        if (m_t)
-            gas = m_t.gas();
-        else if (m_msg.has_value())
-            gas = m_msg->cp.gas;
-        else
-            BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("missing tx or msg"));
-
-        int64_t maxRefund = (static_cast<int64_t>(gas) - static_cast<int64_t>(m_gas)) / 2;
+        // debug log
         // std::cout << "refund: " << maxRefund << " " << m_ext->sub.refunds << " " << m_ext->sub.refunds << " size: " << m_ext->sub.selfdestructs.size() << std::endl;
-        m_gas += min(maxRefund, m_ext->sub.refunds);
+
+        if (m_t)
+        {
+            int64_t maxRefund = (static_cast<int64_t>(m_t.gas()) - static_cast<int64_t>(m_gas)) / 2;
+            m_gas += min(maxRefund, m_ext->sub.refunds);
+        }
+
+        // If this is a message call,
+        // the refund will be processed externally and no processing is required
     }
 
     if (m_t)
