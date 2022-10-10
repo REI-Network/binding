@@ -1,9 +1,13 @@
 .vscode
-boost
 build
+cmake
+evm-binding
 evmone
 leveldb
+leveldb-binding
+aleth
 napi-macros
 node_modules
 snappy
+src
 test
