@@ -3,7 +3,4 @@ build
 dist
 node_modules
 
-# TODO:
-boost
-
 dump.json
