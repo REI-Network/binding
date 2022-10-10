@@ -6,3 +6,4 @@ leveldb
 napi-macros
 node_modules
 snappy
+test
