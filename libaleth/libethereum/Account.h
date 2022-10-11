@@ -38,16 +38,22 @@ public:
     {
     }
 
+    /// @returns total staked amount.
     u256 total() const { return m_total; }
 
+    /// @returns current usage fee.
     u256 usage() const { return m_usage; }
 
+    /// @returns latest update timestamp.
     uint64_t timestamp() const { return m_timestamp; }
 
+    /// @returns estimate the available fee for this account.
     u256 estimateFee(uint64_t timestamp, u256 totalAmount, u256 dailyFee) const;
 
+    /// @returns estimate the total fee for this account.
     u256 estimateTotalFee(u256 totalAmount, u256 dailyFee) const;
 
+    /// @returns estimate the current usage for this account.
     u256 estimateUsage(uint64_t timestamp) const;
 
 private:
