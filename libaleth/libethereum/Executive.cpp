@@ -307,6 +307,14 @@ bool Executive::createWithAddressFromNonceAndSender(Address const& _sender, u256
     u256 const& _version)
 {
     u256 nonce = m_s.getNonce(_sender);
+    // To be compatible with ethereumjs,
+    // when this is a message call,
+    // the nonce needs to be decremented by 1
+    if (m_msg.has_value())
+    {
+        assert(nonce > 0);
+        nonce--;
+    }
     m_newAddress = right160(sha3(rlpList(_sender, nonce)));
     return executeCreate(_sender, _endowment, _gasPrice, _gas, _init, _origin, _version);
 }
