@@ -83,6 +83,10 @@ struct EVMSchedule
     unsigned blockhashGas = 20;
     unsigned maxCodeSize = unsigned(-1);
 
+    bool enableFreeStaking = false;
+    unsigned estimateFeeGas = 3000;
+    u256 dailyFee = u256{fromHex("0x4e1003b28d92800000")};
+
     boost::optional<u256> blockRewardOverwrite;
 
     bool staticCallDepthLimit() const { return !eip150Mode; }
@@ -100,7 +104,8 @@ struct EVMSchedule
         { Address{0x6}, false }, // alt_bn128_G1_add
         { Address{0x7}, false }, // alt_bn128_G1_mul
         { Address{0x8}, false }, // alt_bn128_pairing_product
-        { Address{0x9}, false } // blake2_compression
+        { Address{0x9}, false }, // blake2_compression
+        { Address{0xff}, false } // estimate_fee
     };
 
     bool isSupportedPrecompiled(const Address& addr) const
@@ -199,6 +204,13 @@ static const EVMSchedule BerlinSchedule = [] {
     schedule.sloadGas = 100;
     schedule.sstoreUnchangedGas = 100;
     schedule.sstoreResetGas = 5000 - 2100;
+    return schedule;
+}();
+
+static const EVMSchedule FreeStakingSchedule = [] {
+    EVMSchedule schedule = BerlinSchedule;
+    schedule.enableFreeStaking = true;
+    schedule.supportedPrecompiled[Address{0xff}] = true;
     return schedule;
 }();
 

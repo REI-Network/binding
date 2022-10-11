@@ -289,4 +289,39 @@ ETH_REGISTER_PRECOMPILED_PRICER(blake2_compression)
     auto const rounds = fromBigEndian<uint32_t>(_in.cropped(0, 4));
     return rounds;
 }
+
+Address parseAddressRightPadded(bytes const& _in, size_t const& _begin, size_t const& _count)
+{
+    return Address{bytes{_in.begin() + _begin + 12, _in.begin() + _count}};
+}
+
+void fillBytes(bytes& _in, size_t const& _count)
+{
+    if (_in.size() < _count)
+    {
+       bytes fill(_count - _in.size(), 0);
+       _in.insert(_in.begin(), fill.begin(), fill.end());
+    }
+}
+
+ETH_REGISTER_PRECOMPILED2(estimate_fee)(bytesConstRef _in, EstimateFeeCallback _callback)
+{
+    auto _inBytes = _in.toBytes();
+    fillBytes(_inBytes, 64);
+    
+    Address const addr = parseAddressRightPadded(_inBytes, 0, 32);
+    u256 const timestamp(parseBigEndianRightPadded(_in, 32, 32));
+    u256 fee = _callback(addr, timestamp.convert_to<uint64_t>());
+
+    bytes resultBytes(32, 0);
+    toBigEndian(fee, resultBytes);
+
+    return {true, resultBytes};
+}
+
+ETH_REGISTER_PRECOMPILED_PRICER(estimate_fee)
+(bytesConstRef, EVMSchedule const& _schedule, u256 const&)
+{
+    return _schedule.estimateFeeGas;
+}
 }

@@ -581,6 +581,11 @@ u256 State::version(Address const& _a) const
     return a ? a->version() : 0;
 }
 
+boost::optional<StakeInfo> const& State::stakeInfo(Address const& _addr) const
+{
+    return account(_addr)->stakeInfo();
+}
+
 void State::unrevertableTouch(Address const& _address)
 {
     m_unrevertablyTouched.insert(_address);

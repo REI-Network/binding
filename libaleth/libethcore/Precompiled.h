@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <variant>
 #include <unordered_map>
 #include <functional>
 #include <libdevcore/CommonData.h>
@@ -17,7 +18,10 @@ namespace eth
 {
 struct ChainOperationParams;
 
-using PrecompiledExecutor = std::function<std::pair<bool, bytes>(bytesConstRef _in)>;
+using EstimateFeeCallback = std::function<u256(Address const&, uint64_t)>;
+using PrecompiledExecutorWithoutCallback = std::function<std::pair<bool, bytes>(bytesConstRef _in)>;
+using PrecompiledExecutorWithCallback = std::function<std::pair<bool, bytes>(bytesConstRef, EstimateFeeCallback)>;
+using PrecompiledExecutor = std::variant<PrecompiledExecutorWithoutCallback, PrecompiledExecutorWithCallback>;
 using PrecompiledPricer = std::function<bigint(
     bytesConstRef _in, EVMSchedule const& _schedule, u256 const& _blockNumber)>;
 
@@ -53,6 +57,7 @@ private:
 
 // TODO: unregister on unload with a static object.
 #define ETH_REGISTER_PRECOMPILED(Name) static std::pair<bool, bytes> __eth_registerPrecompiledFunction ## Name(bytesConstRef _in); static PrecompiledExecutor __eth_registerPrecompiledFactory ## Name = ::dev::eth::PrecompiledRegistrar::registerExecutor(#Name, &__eth_registerPrecompiledFunction ## Name); static std::pair<bool, bytes> __eth_registerPrecompiledFunction ## Name
+#define ETH_REGISTER_PRECOMPILED2(Name) static std::pair<bool, bytes> __eth_registerPrecompiledFunction ## Name(bytesConstRef _in, EstimateFeeCallback _callback); static PrecompiledExecutor __eth_registerPrecompiledFactory ## Name = ::dev::eth::PrecompiledRegistrar::registerExecutor(#Name, &__eth_registerPrecompiledFunction ## Name); static std::pair<bool, bytes> __eth_registerPrecompiledFunction ## Name
 #define ETH_REGISTER_PRECOMPILED_PRICER(Name)                                                   \
     static bigint __eth_registerPricerFunction##Name(                                           \
         bytesConstRef _in, EVMSchedule const& _schedule, u256 const& _blockNumber); \

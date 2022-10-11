@@ -248,7 +248,26 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
             m_gas = (u256)(_p.gas - g);
             bytes output;
             bool success;
-            tie(success, output) = m_sealEngine.executePrecompiled(_p.codeAddress, _p.data, m_envInfo.number());
+            tie(success, output) = m_sealEngine.executePrecompiled(
+                _p.codeAddress,
+                _p.data, 
+                [this](Address const& _addr, uint64_t timestamp) -> u256
+                {
+                    const auto& schedule = m_sealEngine.evmSchedule(m_envInfo.number());
+                    if (!schedule.enableFreeStaking)
+                        BOOST_THROW_EXCEPTION(ExecutionFailed() << errinfo_comment("free staking hardfork is not enabled"));
+
+                    if (m_s.accountNonemptyAndExisting(_addr))
+                    {
+                        const auto& stakeInfo = m_s.stakeInfo(_addr);
+                        if (stakeInfo)
+                            return stakeInfo->estimateFee(timestamp, m_s.balance(FeeManagerAddress), schedule.dailyFee);
+                    }
+
+                    return 0;
+                },
+                m_envInfo.number()
+            );
             size_t outputSize = output.size();
             m_output = owning_bytes_ref{std::move(output), 0, outputSize};
             if (!success)

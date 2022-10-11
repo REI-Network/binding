@@ -79,7 +79,7 @@ public:
     {
         return m_params.precompiled.at(_a).cost(_in, evmSchedule(_blockNumber), _blockNumber);
     }
-    virtual std::pair<bool, bytes> executePrecompiled(Address const& _a, bytesConstRef _in, u256 const&) const { return m_params.precompiled.at(_a).execute(_in); }
+    virtual std::pair<bool, bytes> executePrecompiled(Address const& _a, bytesConstRef _in, EstimateFeeCallback _callback, u256 const&) const { return m_params.precompiled.at(_a).execute(_in, _callback); }
 
 protected:
     virtual bool onOptionChanging(std::string const&, bytes const&) { return true; }

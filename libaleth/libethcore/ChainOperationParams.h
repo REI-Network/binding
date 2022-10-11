@@ -27,7 +27,15 @@ public:
     {
         return m_cost(_in, _schedule, _blockNumber);
     }
-    std::pair<bool, bytes> execute(bytesConstRef _in) const { return m_execute(_in); }
+    
+    std::pair<bool, bytes> execute(bytesConstRef _in, EstimateFeeCallback _callback) const
+    { 
+        const auto* pValue = std::get_if<PrecompiledExecutorWithoutCallback>(&m_execute);
+        if (pValue != nullptr)
+            return (*pValue)(_in);
+        else
+            return std::get<1>(m_execute)(_in, _callback);
+    }
 
     u256 const& startingBlock() const { return m_startingBlock; }
 

@@ -298,6 +298,9 @@ public:
     /// @returns 0 if no account exists at that address.
     u256 version(Address const& _contract) const;
 
+    /// @return account's stake info.
+    boost::optional<StakeInfo> const& stakeInfo(Address const& _addr) const;
+
     /// Increament the account nonce.
     void incNonce(Address const& _id);
 

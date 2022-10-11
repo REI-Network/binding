@@ -32,5 +32,8 @@ extern Address const MaxAddress;
 /// The SYSTEM address.
 extern Address const SystemAddress;
 
+/// The fee manager address.
+extern Address const FeeManagerAddress;
+
 }
 
