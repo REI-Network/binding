@@ -17,6 +17,38 @@ using namespace dev::eth::validation;
 
 namespace fs = boost::filesystem;
 
+const uint64_t StakeInfo::recoverInterval = 86400;
+
+u256 StakeInfo::estimateFee(uint64_t timestamp, u256 totalAmount, u256 dailyFee) const
+{
+    auto const usage = estimateUsage(timestamp);
+    auto const fee = estimateTotalFee(totalAmount, dailyFee);
+    if (fee > usage)
+        return fee - usage;
+    else
+        return 0;
+}
+
+u256 StakeInfo::estimateTotalFee(u256 totalAmount, u256 dailyFee) const
+{
+    if (totalAmount == 0)
+        return 0;
+    else
+        return m_total * dailyFee / totalAmount;
+}
+
+u256 StakeInfo::estimateUsage(uint64_t timestamp) const
+{
+    if (timestamp <= m_timestamp)
+        return m_usage;
+
+    const uint64_t interval = timestamp - m_timestamp;
+    if (m_usage > 0 && interval < StakeInfo::recoverInterval)
+        return m_usage * (StakeInfo::recoverInterval - interval) / StakeInfo::recoverInterval;
+    else
+        return 0;
+}
+
 void Account::setCode(bytes&& _code, u256 const& _version)
 {
     auto const newHash = sha3(_code);

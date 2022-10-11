@@ -183,11 +183,12 @@ Account* State::account(Address const& _addr)
     auto const balance = state[1].toInt<u256>();
     auto const storageRoot = state[2].toHash<h256>();
     auto const codeHash = state[3].toHash<h256>();
-    // version is 0 if absent from RLP
-    auto const version = state[4] ? state[4].toInt<u256>() : 0;
+
+    // Version is always 0
+    u256 const version = 0;
 
     auto i = m_cache.emplace(piecewise_construct, forward_as_tuple(_addr),
-        forward_as_tuple(nonce, balance, storageRoot, codeHash, version, Account::Unchanged));
+        forward_as_tuple(nonce, balance, storageRoot, codeHash, version, Account::Unchanged, state[4]));
     m_unchangedCacheEntries.push_back(_addr);
     return &i.first->second;
 }
@@ -935,6 +936,11 @@ AddressHash dev::eth::commit(AccountMap const& _cache, SecureTrieDB<Address, DB>
 
                 if (version != 0)
                     s << i.second.version();
+
+                // append free staking info
+                auto const& stakeInfo = i.second.stakeInfo();
+                if (stakeInfo)
+                    s.appendList(3) << stakeInfo->total() << stakeInfo->usage() << stakeInfo->timestamp();
 
                 _state.insert(i.first, &s.out());
             }

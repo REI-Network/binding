@@ -7,9 +7,11 @@
 
 #include <libdevcore/Common.h>
 #include <libdevcore/SHA3.h>
+#include <libdevcore/RLP.h>
 #include <libdevcore/TrieCommon.h>
 #include <libethcore/Common.h>
 
+#include <boost/optional.hpp>
 #include <boost/filesystem/path.hpp>
 
 namespace dev
@@ -18,6 +20,41 @@ class OverlayDB;
 
 namespace eth
 {
+
+class StakeInfo
+{
+public:
+    // NOTE: const value,
+    //       please make sure it is consistent with the js code
+    static const uint64_t recoverInterval;
+
+    StakeInfo(u256 const& _total, u256 const& _usage, uint64_t const& _timestamp)
+        : m_total(_total), m_usage(_usage), m_timestamp(_timestamp)
+    {
+    }
+
+    StakeInfo(RLP const& _rlp)
+        : StakeInfo(_rlp[0].toInt<u256>(), _rlp[1].toInt<u256>(), _rlp[2].toInt<uint64_t>())
+    {
+    }
+
+    u256 total() const { return m_total; }
+
+    u256 usage() const { return m_usage; }
+
+    uint64_t timestamp() const { return m_timestamp; }
+
+    u256 estimateFee(uint64_t timestamp, u256 totalAmount, u256 dailyFee) const;
+
+    u256 estimateTotalFee(u256 totalAmount, u256 dailyFee) const;
+
+    u256 estimateUsage(uint64_t timestamp) const;
+
+private:
+    u256 m_total;
+    u256 m_usage;
+    uint64_t m_timestamp;
+};
 
 /**
  * Models the state of a single Ethereum account.
@@ -58,7 +95,7 @@ public:
 
     /// Explicit constructor for wierd cases of construction or a contract account.
     Account(u256 const& _nonce, u256 const& _balance, h256 const& _contractRoot,
-        h256 const& _codeHash, u256 const& _version, Changedness _c)
+        h256 const& _codeHash, u256 const& _version, Changedness _c, RLP const& _stakeInfoRLP)
       : m_isAlive(true),
         m_isUnchanged(_c == Unchanged),
         m_nonce(_nonce),
@@ -68,6 +105,9 @@ public:
         m_version(_version)
     {
         assert(_contractRoot);
+
+        if (_stakeInfoRLP)
+            m_stakeInfo = StakeInfo{_stakeInfoRLP};
     }
 
 
@@ -119,6 +159,9 @@ public:
     /// @returns the root of the trie (whose nodes are stored in the state db externally to this class)
     /// which encodes the base-state of the account's storage (upon which the storage is overlaid).
     h256 baseRoot() const { assert(m_storageRoot); return m_storageRoot; }
+
+    /// @returns account's stake info.
+    boost::optional<StakeInfo> const& stakeInfo() const { return m_stakeInfo; }
 
     /// @returns account's storage value corresponding to the @_key
     /// taking into account overlayed modifications
@@ -213,6 +256,9 @@ private:
 
     /// Account's version
     u256 m_version = 0;
+
+    /// Account's stake info
+    boost::optional<StakeInfo> m_stakeInfo;
 
     /// The map with is overlaid onto whatever storage is implied by the m_storageRoot in the trie.
     mutable std::unordered_map<u256, u256> m_storageOverlay;
