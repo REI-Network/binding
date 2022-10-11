@@ -104,6 +104,7 @@ public:
     u256 istanbulForkBlock = c_infiniteBlockNumber;
     u256 muirGlacierForkBlock = c_infiniteBlockNumber;
     u256 berlinForkBlock = c_infiniteBlockNumber;
+    u256 freeStakingForkBlock = c_infiniteBlockNumber;
     u256 lastForkBlock = c_infiniteBlockNumber;
     AdditionalEIPs lastForkAdditionalEIPs;
     int chainID = 0;    // Distinguishes different chains (mainnet, Ropsten, etc).

@@ -127,6 +127,7 @@ void ChainParams::loadConfig(
     setOptionalU256Parameter(istanbulForkBlock, c_istanbulForkBlock);
     setOptionalU256Parameter(muirGlacierForkBlock, c_muirGlacierForkBlock);
     setOptionalU256Parameter(berlinForkBlock, c_berlinForkBlock);
+    setOptionalU256Parameter(freeStakingForkBlock, c_freeStakingForkBlock);
     setOptionalU256Parameter(experimentalForkBlock, c_experimentalForkBlock);
 
     lastForkBlock = findMaxForkBlockNumber(params);
