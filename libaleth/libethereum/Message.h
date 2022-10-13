@@ -20,6 +20,7 @@ struct Message
     bool isUpgrade;
     bool clearStorage;
     bool clearEmptyAccount;
+    boost::optional<Address> author;
     boost::optional<AccessListStruct> accessList;
 };
 

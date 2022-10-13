@@ -573,6 +573,9 @@ Message toMessage(const Napi::Value &value)
     msg.isUpgrade = toBool(obj.Get("isUpgrade"));
     msg.clearStorage = toBool(obj.Get("clearStorage"));
     msg.clearEmptyAccount = toBool(obj.Get("clearEmptyAccount"));
+    auto author = obj.Get("author");
+    if (!author.IsUndefined() && !author.IsNull())
+        msg.author = toAddress(author);
     auto accessListValue = obj.Get("accessList");
     if (!accessListValue.IsUndefined() && !accessListValue.IsNull())
         msg.accessList = toAccessList(accessListValue);
@@ -727,7 +730,7 @@ class EVMBinding
         createStateIfNotExsits();
 
         // create env info object
-        EnvInfo envInfo(header, LastBlockHashes(loader), gasUsed, m_params.chainID);
+        EnvInfo envInfo(header, LastBlockHashes(loader), gasUsed, m_params.chainID, msg.author);
         // reset state root
         m_state->setRoot(stateRoot);
         // execute transaction

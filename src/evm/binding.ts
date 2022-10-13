@@ -43,6 +43,7 @@ export type Message = {
   isUpgrade: boolean;
   clearStorage: boolean;
   clearEmptyAccount: boolean;
+  author?: string;
   accessList?: AccessList;
 };
 

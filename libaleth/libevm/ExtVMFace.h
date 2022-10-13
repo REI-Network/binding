@@ -129,14 +129,14 @@ class EnvInfo
 {
 public:
     EnvInfo(BlockHeader const& _current, LastBlockHashesFace const& _lh, u256 const& _gasUsed,
-        u256 const& _chainID)
-      : m_headerInfo(_current), m_lastHashes(_lh), m_gasUsed(_gasUsed), m_chainID(_chainID)
+        u256 const& _chainID, boost::optional<Address> _author = {})
+      : m_headerInfo(_current), m_lastHashes(_lh), m_gasUsed(_gasUsed), m_chainID(_chainID), m_author(_author)
     {}
     // Constructor with custom gasLimit - used in some synthetic scenarios like eth_estimateGas RPC
     // method
     EnvInfo(BlockHeader const& _current, LastBlockHashesFace const& _lh, u256 const& _gasUsed,
-        u256 const& _gasLimit, u256 const& _chainID)
-      : EnvInfo(_current, _lh, _gasUsed, _chainID)
+        u256 const& _gasLimit, u256 const& _chainID, boost::optional<Address> _author = {})
+      : EnvInfo(_current, _lh, _gasUsed, _chainID, _author)
     {
         m_headerInfo.setGasLimit(_gasLimit);
     }
@@ -144,7 +144,7 @@ public:
     BlockHeader const& header() const { return m_headerInfo; }
 
     int64_t number() const { return m_headerInfo.number(); }
-    Address const& author() const { return m_headerInfo.author(); }
+    Address const& author() const { return m_author ? *m_author : m_headerInfo.author(); }
     int64_t timestamp() const { return m_headerInfo.timestamp(); }
     u256 const& difficulty() const { return m_headerInfo.difficulty(); }
     u256 const& gasLimit() const { return m_headerInfo.gasLimit(); }
@@ -154,6 +154,7 @@ public:
 
 private:
     BlockHeader m_headerInfo;
+    boost::optional<Address> m_author;
     LastBlockHashesFace const& m_lastHashes;
     u256 m_gasUsed;
     u256 m_chainID;
