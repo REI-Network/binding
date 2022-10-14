@@ -106,8 +106,6 @@ test("should run dump.json succeed", async function(t) {
       // update new state root
       stateRoot = result.stateRoot;
     }
-  } catch (err) {
-    t.ifError(err, "evm run failed")
   } finally {
     // gracefully close leveldb
     await new Promise((r) => {
