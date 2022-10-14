@@ -1,1 +1,1 @@
-module.exports = require('bindings')('leveldb-binding')
+module.exports = require('../binding')('leveldb-binding')

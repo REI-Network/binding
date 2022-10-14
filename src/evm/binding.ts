@@ -1,4 +1,4 @@
-module.exports = require("bindings")("evm-binding");
+module.exports = require("../binding")("evm-binding");
 
 export type LastBlockHashesLoader = () => (string | Buffer)[];
 
