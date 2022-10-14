@@ -23,6 +23,7 @@ npm i @rei-network/binding
 git clone https://github.com/REI-Network/binding
 git submodule update --init --recursive
 npm install
+npm run build
 ```
 
 ## Test
