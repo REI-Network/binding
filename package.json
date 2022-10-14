@@ -45,6 +45,7 @@
     "mkfiletree": "^2.0.0",
     "readfiletree": "^1.0.0",
     "tape": "^5.0.1",
-    "tempy": "^1.0.1"
+    "tempy": "^1.0.1",
+    "typescript": "^4.1.2"
   }
 }
