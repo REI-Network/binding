@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "postinstall": "npm run install:leveldb && npm run install:napi-macros && npm run install:snappy && npm run install:evmone && npm run install:boost && npm run build",
-    "build": "cmake-js --CDEVMONE_TESTING=OFF --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF --CDSNAPPY_BUILD_TESTS=OFF --CDSNAPPY_BUILD_BENCHMARKS=OFF --CDSNAPPY_INSTALL=OFF build",
-    "build:debug": "cmake-js -D --CDEVMONE_TESTING=OFF --CDLEVELDB_BUILD_TESTS=OFF --CDLEVELDB_BUILD_BENCHMARKS=OFF --CDLEVELDB_INSTALL=OFF --CDSNAPPY_BUILD_TESTS=OFF --CDSNAPPY_BUILD_BENCHMARKS=OFF --CDSNAPPY_INSTALL=OFF build",
+    "build": "cmake-js build",
+    "build:debug": "cmake-js -D build",
     "build:tsc": "tsc",
     "test": "npm run test:leveldown && npm run test:leveldown:gc && npm run test:evm",
     "test:leveldown": "tape test/leveldown/*-test.js",
