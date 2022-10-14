@@ -11,11 +11,17 @@ C++ binding for rei network
 - `napi-macros` 2.0.0
 - `snappy` 1.1.9
 
+## Install
+
+```
+npm i @rei-network/binding
+```
+
 ## Build
 
 ```
 git clone https://github.com/REI-Network/binding
-cd binding
+git submodule update --init --recursive
 npm install
 ```
 

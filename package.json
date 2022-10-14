@@ -4,7 +4,6 @@
   "description": "C++ binding for rei network",
   "main": "dist/index.js",
   "scripts": {
-    "postinstall": "npm run install:leveldb && npm run install:napi-macros && npm run install:snappy && npm run install:evmone && npm run install:boost && npm run build",
     "build": "cmake-js build",
     "build:debug": "cmake-js -D build",
     "build:tsc": "tsc",
@@ -12,12 +11,7 @@
     "test:leveldown": "tape test/leveldown/*-test.js",
     "test:leveldown:gc": "node --expose-gc test/leveldown/gc.js",
     "test:leveldown:manifest": "tape test/leveldown/manifest-file-size.js",
-    "test:evm": "node test/evm/evm.test.js",
-    "install:leveldb": "test -d leveldb || (git clone https://github.com/REI-Network/leveldb && cd leveldb && git reset --hard 1162b57)",
-    "install:napi-macros": "test -d napi-macros || (git clone https://github.com/hyperdivision/napi-macros && cd napi-macros && git reset --hard 6447512)",
-    "install:snappy": "test -d snappy || (git clone https://github.com/google/snappy && cd snappy && git reset --hard 2b63814)",
-    "install:evmone": "test -d evmone || (git clone https://github.com/REI-Network/evmone && cd evmone && git reset --hard e95cdf7 && git submodule update --init --recursive)",
-    "install:boost": "test -d boost || (git clone -b 1.78.0 https://github.com/samlior/boost && cd boost && git reset --hard b704471)"
+    "test:evm": "node test/evm/evm.test.js"
   },
   "repository": {
     "type": "git",
@@ -33,16 +27,16 @@
   "homepage": "https://github.com/REI-Network/rei-binding#readme",
   "dependencies": {
     "abstract-leveldown": "^7.2.0",
-    "bindings": "^1.5.0",
-    "cmake-js": "^6.3.2",
-    "node-addon-api": "^5.0.0"
+    "bindings": "^1.5.0"
   },
   "devDependencies": {
     "@types/node": "^14.14.9",
     "async-each": "^1.0.3",
+    "cmake-js": "^6.3.2",
     "delayed": "^2.0.0",
     "du": "^1.0.0",
     "mkfiletree": "^2.0.0",
+    "node-addon-api": "^5.0.0",
     "readfiletree": "^1.0.0",
     "tape": "^5.0.1",
     "tempy": "^1.0.1",
