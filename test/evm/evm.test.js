@@ -1,5 +1,6 @@
-const { JSEVMBinding, init } = require("bindings")("evm-binding");
+const test = require('tape')
 const testCommon = require("../leveldown/common");
+const { JSEVMBinding, init } = require("../../dist");
 
 const accounts = [
   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -43,7 +44,7 @@ function toBuffer(str) {
   }
 }
 
-(async () => {
+test("should run dump.json succeed", async function(t) {
   const db = testCommon.factory();
   try {
     // open leveldb
@@ -56,7 +57,8 @@ function toBuffer(str) {
     // init evm binding
     init();
 
-    // create instance
+    // create evm instance
+    // TODO: support chainID
     const evm = new JSEVMBinding(db.exposed, 23579);
 
     // init genesis state
@@ -69,16 +71,11 @@ function toBuffer(str) {
 
     // load dump transactions
     const { genesis, dump } = require("./dump.json");
-    if (
-      genesis.stateRoot.toLocaleLowerCase() !== stateRoot.toLocaleLowerCase()
-    ) {
-      throw new Error("genesis state root mismatch!");
-    }
+    t.equal(genesis.stateRoot.toLocaleLowerCase(), stateRoot.toLocaleLowerCase(), "genesis state root should be equal")
 
     // execute transactions
     for (let i = 0; i < dump.length; i++) {
       const { blockHeader, tx } = dump[i];
-      console.log("start run tx at index:", i);
 
       // execute single tx
       const result = evm.runTx(
@@ -88,9 +85,6 @@ function toBuffer(str) {
         "0x00",
         () => []
       );
-
-      console.log("run tx succeed at index:", i);
-      console.log("result:", JSON.stringify(result, undefined, "\t"));
 
       if (i === 1) {
         // hash()
@@ -106,18 +100,18 @@ function toBuffer(str) {
           "0x00",
           () => []
         );
-        console.log("output:", output);
+        t.equal(output, "0x00701a075d65cbb1645369211d1e2c6282e06f385df37ef776e0410cc6e11931", "hash should be equal")
       }
 
       // update new state root
       stateRoot = result.stateRoot;
     }
   } catch (err) {
-    console.log("error:", err);
+    t.ifError(err, "evm run failed")
   } finally {
     // gracefully close leveldb
     await new Promise((r) => {
       db.close(r);
     });
   }
-})();
+})

@@ -3,5 +3,3 @@ build
 dist
 compiled
 node_modules
-
-dump.json
