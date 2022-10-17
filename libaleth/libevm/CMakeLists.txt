@@ -16,7 +16,7 @@ add_library(evm ${sources})
 target_link_libraries(
     evm
     PUBLIC ethcore devcore evmc::evmc evmone
-    PRIVATE Boost::program_options evmc::loader
+    PRIVATE evmc::loader
 )
 
 if(EVM_OPTIMIZE)

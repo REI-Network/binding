@@ -8,7 +8,6 @@
 #include "db.h"
 
 #include <boost/filesystem.hpp>
-#include <boost/program_options/options_description.hpp>
 
 namespace dev
 {
@@ -21,13 +20,6 @@ enum class DatabaseKind
     MemoryDB,
     ExternalLevelDB
 };
-
-/// Provide a set of program options related to databases
-///
-/// @param _lineLength  The line length for description text wrapping, the same as in
-///                     boost::program_options::options_description::options_description().
-boost::program_options::options_description databaseProgramOptions(
-    unsigned _lineLength = boost::program_options::options_description::m_default_line_length);
 
 bool isDiskDatabase();
 DatabaseKind databaseKind();

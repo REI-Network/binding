@@ -4,14 +4,10 @@
 
 #include "VMFactory.h"
 #include "EVMC.h"
-// #include "LegacyVM.h"
 
-// #include <libaleth-interpreter/interpreter.h>
 #include <evmone/evmone.h>
 
 #include <evmc/loader.h>
-
-// namespace po = boost::program_options;
 
 namespace dev
 {
@@ -35,11 +31,7 @@ VMPtr VMFactory::create(VMKind _kind)
         return {new EVMC{evmc_create_evmone(), {}}, default_delete};
     case VMKind::Legacy:
     case VMKind::Interpreter:
-        // return {new EVMC{evmc_create_aleth_interpreter(), s_evmcOptions}, default_delete};
     case VMKind::DLL:
-        // assert(g_evmcDll != nullptr);
-        // Return "fake" owning pointer to global EVMC DLL VM.
-        // return {g_evmcDll.get(), null_delete};
     default:
         BOOST_THROW_EXCEPTION(std::system_error(std::make_error_code(std::errc::invalid_argument),
             "unsupported vm kind"));

@@ -30,8 +30,8 @@ add_library(
     LevelDB.h
     Log.cpp
     Log.h
-    LoggingProgramOptions.cpp
-    LoggingProgramOptions.h
+    # LoggingProgramOptions.cpp
+    # LoggingProgramOptions.h
     LruCache.h
     MemoryDB.cpp
     MemoryDB.h
@@ -61,7 +61,6 @@ add_library(
 target_include_directories(devcore PUBLIC ${Boost_INCLUDE_DIR} ${ETHASH_ROOT}/include PRIVATE ../utils)
 
 target_link_libraries(devcore PUBLIC Boost::filesystem Boost::system Boost::log Boost::thread Threads::Threads PRIVATE ethash::ethash)
-
 
 target_link_libraries(devcore PRIVATE leveldb)
 
