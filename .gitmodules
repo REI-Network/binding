@@ -10,7 +10,3 @@
 [submodule "evmone"]
 	path = evmone
 	url = https://github.com/REI-Network/evmone
-[submodule "boost"]
-	path = boost
-	url = http://github.com/samlior/boost
-	branch = 1.78.0
