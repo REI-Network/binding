@@ -17,14 +17,6 @@ project(binding)
 
 include(CheckCXXCompilerFlag)
 
-CHECK_CXX_COMPILER_FLAG(-std=c++17 LIBCXX_HAS_STDCXX17_FLAG)
-
-if(LIBCXX_HAS_STDCXX17_FLAG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
-else()
-	message(FATAL_ERROR "c++17 is required")
-endif()
-
 if (NOT MSVC)
 	if(NOT APPLE)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
@@ -35,6 +27,22 @@ if (NOT MSVC)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -stdlib=libc++")
 		set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}")
+	endif()
+
+	CHECK_CXX_COMPILER_FLAG(-std=c++17 LIBCXX_HAS_STDCXX17_FLAG)
+
+	if(LIBCXX_HAS_STDCXX17_FLAG)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+	else()
+		message(FATAL_ERROR "c++17 is required")
+	endif()
+else()
+	CHECK_CXX_COMPILER_FLAG(/std:c++17 LIBCXX_HAS_STDCXX17_FLAG)
+
+	if(LIBCXX_HAS_STDCXX17_FLAG)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /O2 /arch:AVX2")
+	else()
+		message(FATAL_ERROR "c++17 is required")
 	endif()
 endif(NOT MSVC)
 
@@ -60,8 +68,8 @@ set(Boost_USE_RELEASE_LIBS      ON)
 set(Boost_USE_MULTITHREADED 	ON)
 set(Boost_USE_STATIC_RUNTIME	OFF)
 
-hunter_add_package(Boost COMPONENTS filesystem system thread context log)
-find_package(Boost CONFIG REQUIRED filesystem system thread context log)
+hunter_add_package(Boost COMPONENTS filesystem system thread context atomic log)
+find_package(Boost CONFIG REQUIRED filesystem system thread context atomic log)
 
 hunter_add_package(jsoncpp)
 find_package(jsoncpp CONFIG REQUIRED)

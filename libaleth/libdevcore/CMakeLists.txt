@@ -60,7 +60,7 @@ add_library(
 # Needed to prevent including system-level boost headers:
 target_include_directories(devcore PUBLIC ${Boost_INCLUDE_DIR} ${ETHASH_ROOT}/include PRIVATE ../utils)
 
-target_link_libraries(devcore PUBLIC Boost::filesystem Boost::system Boost::log Boost::thread Threads::Threads PRIVATE ethash::ethash)
+target_link_libraries(devcore PUBLIC Boost::filesystem Boost::system Boost::atomic Boost::log Boost::thread Threads::Threads PRIVATE ethash::ethash)
 
 target_link_libraries(devcore PRIVATE leveldb)
 
