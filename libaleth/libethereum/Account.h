@@ -28,21 +28,16 @@ public:
     //       please make sure it is consistent with the js code
     static const uint64_t recoverInterval;
 
-    StakeInfo(u256 const& _total, u256 const& _usage, uint64_t const& _timestamp)
-        : m_total(_total), m_usage(_usage), m_timestamp(_timestamp)
-    {
-    }
-
-    StakeInfo(RLP const& _rlp)
-        : StakeInfo(_rlp[0].toInt<u256>(), _rlp[1].toInt<u256>(), _rlp[2].toInt<uint64_t>())
-    {
-    }
+    StakeInfo(RLP const& _rlp);
 
     /// @returns total staked amount.
     u256 total() const { return m_total; }
 
     /// @returns current usage fee.
     u256 usage() const { return m_usage; }
+
+    /// @returns a reference to latest update timestamp bytes.
+    bytes const& timestampBytes() const { return m_timestampBytes; }
 
     /// @returns latest update timestamp.
     uint64_t timestamp() const { return m_timestamp; }
@@ -60,6 +55,10 @@ private:
     u256 m_total;
     u256 m_usage;
     uint64_t m_timestamp;
+
+    // Preserving the original bytecode is a historical issue,
+    // earlier code didn't handle timestamps well
+    bytes m_timestampBytes;
 };
 
 /**

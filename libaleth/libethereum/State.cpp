@@ -904,50 +904,57 @@ AddressHash dev::eth::commit(AccountMap const& _cache, SecureTrieDB<Address, DB>
                 _state.remove(i.first);
             else
             {
-                auto const version = i.second.version();
-
-                // version = 0: [nonce, balance, storageRoot, codeHash]
-                // version > 0: [nonce, balance, storageRoot, codeHash, version]
-                RLPStream s(version != 0 ? 5 : 4);
-                s << i.second.nonce() << i.second.balance();
-
-                if (i.second.storageOverlay().empty())
+                auto appendCommon = [&](RLPStream& s)
                 {
-                    assert(i.second.baseRoot());
-                    s.append(i.second.baseRoot());
-                }
-                else
-                {
-                    SecureTrieDB<h256, DB> storageDB(_state.db(), i.second.baseRoot());
-                    for (auto const& j: i.second.storageOverlay())
-                        if (j.second)
-                            storageDB.insert(j.first, rlp(j.second));
-                        else
-                            storageDB.remove(j.first);
-                    assert(storageDB.root());
-                    s.append(storageDB.root());
-                }
+                    s << i.second.nonce() << i.second.balance();
 
-                if (i.second.hasNewCode())
-                {
-                    h256 ch = i.second.codeHash();
-                    // Store the size of the code
-                    CodeSizeCache::instance().store(ch, i.second.code().size());
-                    _state.db()->insert(ch, &i.second.code());
-                    s << ch;
-                }
-                else
-                    s << i.second.codeHash();
+                    if (i.second.storageOverlay().empty())
+                    {
+                        assert(i.second.baseRoot());
+                        s.append(i.second.baseRoot());
+                    }
+                    else
+                    {
+                        SecureTrieDB<h256, DB> storageDB(_state.db(), i.second.baseRoot());
+                        for (auto const& j: i.second.storageOverlay())
+                            if (j.second)
+                                storageDB.insert(j.first, rlp(j.second));
+                            else
+                                storageDB.remove(j.first);
+                        assert(storageDB.root());
+                        s.append(storageDB.root());
+                    }
 
-                if (version != 0)
-                    s << i.second.version();
+                    if (i.second.hasNewCode())
+                    {
+                        h256 ch = i.second.codeHash();
+                        // Store the size of the code
+                        CodeSizeCache::instance().store(ch, i.second.code().size());
+                        _state.db()->insert(ch, &i.second.code());
+                        s << ch;
+                    }
+                    else
+                        s << i.second.codeHash();
+                };
 
-                // append free staking info
                 auto const& stakeInfo = i.second.stakeInfo();
                 if (stakeInfo)
-                    s.appendList(3) << stakeInfo->total() << stakeInfo->usage() << stakeInfo->timestamp();
-
-                _state.insert(i.first, &s.out());
+                {
+                    // append free staking account
+                    // [nonce, balance, storageRoot, codeHash, [total, usage, timestamp]]
+                    RLPStream s(5);
+                    appendCommon(s);
+                    s.appendList(3) << stakeInfo->total() << stakeInfo->usage() << stakeInfo->timestampBytes();
+                    _state.insert(i.first, &s.out());
+                }
+                else
+                {
+                    // append common account
+                    // [nonce, balance, storageRoot, codeHash]
+                    RLPStream s(4);
+                    appendCommon(s);
+                    _state.insert(i.first, &s.out());
+                }
             }
             ret.insert(i.first);
         }
