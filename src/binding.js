@@ -9,5 +9,11 @@ const tryList = [
 ]
 
 module.exports = function (name) {
-    return bindings({ bindings: name, try: tryList })
+    try {
+        // load release binding
+        return bindings({ bindings: name, try: tryList })
+    } catch {
+        // load debug binding
+        return bindings({ bindings: name + 'd', try: tryList })
+    }
 }
