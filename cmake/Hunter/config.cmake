@@ -28,6 +28,7 @@ hunter_config(
 hunter_config(
     Boost
     VERSION 1.78.0
+    CMAKE_ARGS
     CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
     CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
 )
