@@ -30,6 +30,9 @@ public:
 
     StakeInfo(RLP const& _rlp);
 
+    /// @returns staking info is empty.
+    bool isEmpty() const { return m_total == 0; }
+
     /// @returns total staked amount.
     u256 total() const { return m_total; }
 

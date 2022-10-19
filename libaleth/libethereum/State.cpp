@@ -935,7 +935,7 @@ AddressHash dev::eth::commit(AccountMap const& _cache, SecureTrieDB<Address, DB>
                 };
 
                 auto const& stakeInfo = i.second.stakeInfo();
-                if (stakeInfo)
+                if (stakeInfo && !stakeInfo->isEmpty())
                 {
                     // append free staking account
                     // [nonce, balance, storageRoot, codeHash, [total, usage, timestamp]]
