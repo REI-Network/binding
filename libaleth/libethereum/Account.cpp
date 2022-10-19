@@ -54,6 +54,10 @@ void Account::setCode(bytes&& _code, u256 const& _version)
     auto const newHash = sha3(_code);
     if (newHash != m_codeHash)
     {
+        // code was updated
+        if (m_codeHash != EmptySHA3)
+            changed();
+
         m_codeCache = std::move(_code);
         m_hasNewCode = true;
         m_codeHash = newHash;

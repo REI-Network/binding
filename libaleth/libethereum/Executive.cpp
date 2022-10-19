@@ -19,6 +19,7 @@ using namespace dev::eth;
 namespace
 {
 Address const c_RipemdPrecompiledAddress{0x03};
+h256 const c_Keccak256RLP = h256(fromHex("56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));
 
 std::string dumpStorage(ExtVM const& _ext)
 {
@@ -420,7 +421,7 @@ bool Executive::executeUpgrade(Address const& _sender, u256 const& _endowment, u
 
     m_savepoint = m_s.savepoint();
 
-    bool exist = m_s.accountNonemptyAndExisting(m_newAddress);
+    bool exist = m_s.storageRoot(m_newAddress) != c_Keccak256RLP;
 
     if (!exist)
     {
@@ -435,10 +436,8 @@ bool Executive::executeUpgrade(Address const& _sender, u256 const& _endowment, u
         // account if it does not exist yet.
         m_s.transferBalance(_sender, m_newAddress, _endowment);
 
-        u256 newNonce = m_s.requireAccountStartNonce();
         if (schedule.eip158Mode)
-            newNonce += 1;
-        m_s.setNonce(m_newAddress, newNonce);
+            m_s.setNonce(m_newAddress, m_s.getNonce(m_newAddress) + 1);
 
         m_s.clearStorage(m_newAddress);
 
