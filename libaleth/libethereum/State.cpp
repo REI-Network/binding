@@ -538,9 +538,6 @@ bytes const& State::code(Address const& _addr) const
 
 void State::setCode(Address const& _address, bytes&& _code, u256 const& _version)
 {
-    // rollback assumes that overwriting of the code never happens
-    // (not allowed in contract creation logic in Executive)
-    assert(!addressHasCode(_address));
     m_changeLog.emplace_back(Change::Code, _address);
     // TODO: This may cause a new account to be created in m_cache.
     m_cache[_address].setCode(move(_code), _version);

@@ -22,9 +22,9 @@ const uint64_t StakeInfo::recoverInterval = 86400;
 StakeInfo::StakeInfo(RLP const& _rlp) :
     m_total(_rlp[0].toInt<u256>()),
     m_usage(_rlp[1].toInt<u256>()),
-    m_timestampBytes(_rlp[2].toBytes()),
-    m_timestamp(u256(m_timestampBytes).convert_to<uint64_t>())
+    m_timestampBytes(_rlp[2].toBytes())
 {
+    m_timestamp = u256(m_timestampBytes).convert_to<uint64_t>();
 }
 
 u256 StakeInfo::estimateFee(uint64_t timestamp, u256 totalAmount, u256 dailyFee) const
