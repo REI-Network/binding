@@ -629,20 +629,20 @@ void State::rollback(size_t _savepoint)
         case Change::WarmedAddress:
             {
                 auto itr = m_warmed.find(change.address);
-                assert(itr != m_warmed.end() && itr->second.empty());
+                itr != m_warmed.end() && itr->second.empty();
                 m_warmed.erase(itr);
                 break;
             }
         case Change::WarmedStorage:
             {
                 auto itr = m_warmed.find(change.address);
-                assert(itr != m_warmed.end() && itr->second.erase(change.key) == 1);
+                itr != m_warmed.end() && itr->second.erase(change.key);
                 break;
             }
         case Change::WarmedAddressAndStorage:
             {
                 auto itr = m_warmed.find(change.address);
-                assert(itr != m_warmed.end() && itr->second.erase(change.key) == 1 && itr->second.empty());
+                itr != m_warmed.end() && itr->second.erase(change.key);
                 m_warmed.erase(itr);
                 break;
             }
