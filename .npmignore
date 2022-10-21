@@ -5,7 +5,7 @@ evm-binding
 evmone
 leveldb
 leveldb-binding
-aleth
+libaleth
 napi-macros
 node_modules
 snappy
