@@ -10,3 +10,6 @@
 [submodule "evmone"]
 	path = evmone
 	url = https://github.com/REI-Network/evmone
+[submodule "compiled"]
+	path = compiled
+	url = https://github.com/REI-Network/compiled

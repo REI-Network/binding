@@ -1,5 +1,4 @@
 .vscode
 build
 dist
-compiled
 node_modules
