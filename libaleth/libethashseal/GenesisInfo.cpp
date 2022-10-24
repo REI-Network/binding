@@ -10,6 +10,7 @@ using namespace dev;
 #include "genesis/ropsten.cpp"
 #include "genesis/reiDevNetwork.cpp"
 #include "genesis/reiMainNetwork.cpp"
+#include "genesis/reiTestNetwork.cpp"
 
 //Test configurations
 #include "genesis/test/berlinTest.cpp"
@@ -91,6 +92,7 @@ std::string const& dev::eth::genesisInfo(Network _n)
     //REI-Network
     case Network::REIDevNetwork: return c_genesisInfoREIDevNetwork;
     case Network::REIMainNetwork: return c_genesisInfoREIMainNetwork;
+    case Network::REITestNetwork: return c_genesisInfoREITestNetwork;
 
     default:
         throw std::invalid_argument("Invalid network value");
