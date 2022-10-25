@@ -106,6 +106,7 @@ h256 const& dev::eth::genesisStateRoot(Network _n)
     case Network::MainNetwork: return c_genesisStateRootMainNetwork;
     case Network::REIDevNetwork: return c_genesisStateRootREIDevNetwork;
     case Network::REIMainNetwork: return c_genesisStateRootREIMainNetwork;
+    case Network::REITestNetwork: return c_genesisStateRootREITestNetwork;
     case Network::Ropsten:
     case Network::MainNetworkTest:
     case Network::TransitionnetTest:
