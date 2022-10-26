@@ -33,10 +33,29 @@ hunter_config(
     CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
 )
 
+hunter_config(
+    ethash
+    VERSION ${HUNTER_ethash_VERSION}
+    CMAKE_ARGS
+    CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+    CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+)
+
 if (MSVC)
     hunter_config(
         libscrypt
         VERSION ${HUNTER_libscrypt_VERSION}
-        CMAKE_ARGS CMAKE_C_FLAGS=-D_CRT_SECURE_NO_WARNINGS
+        CMAKE_ARGS
+        CMAKE_C_FLAGS=-D_CRT_SECURE_NO_WARNINGS
+        CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+        CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+    )
+else()
+    hunter_config(
+        libscrypt
+        VERSION ${HUNTER_libscrypt_VERSION}
+        CMAKE_ARGS
+        CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+        CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
     )
 endif()
