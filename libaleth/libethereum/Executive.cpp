@@ -270,7 +270,7 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
                             else
                                 // load daily fee from schedule
                                 dailyFee = schedule.dailyFee;
-                            return stakeInfo->estimateFee(timestamp, m_s.balance(FeeManagerAddress), schedule.dailyFee);
+                            return stakeInfo->estimateFee(timestamp, m_s.balance(FeeManagerAddress), dailyFee);
                         }
                     }
 
