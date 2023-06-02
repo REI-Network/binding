@@ -8,5 +8,6 @@ namespace dev
 Address const ZeroAddress;
 Address const MaxAddress{"0xffffffffffffffffffffffffffffffffffffffff"};
 Address const SystemAddress{"0xfffffffffffffffffffffffffffffffffffffffe"};
+Address const ConfigAddress{"0x0000000000000000000000000000000000001000"};
 Address const FeeManagerAddress{"0x0000000000000000000000000000000000001005"};
 }

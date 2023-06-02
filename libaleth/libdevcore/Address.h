@@ -32,6 +32,9 @@ extern Address const MaxAddress;
 /// The SYSTEM address.
 extern Address const SystemAddress;
 
+/// The config contract address.
+extern Address const ConfigAddress;
+
 /// The fee manager address.
 extern Address const FeeManagerAddress;
 

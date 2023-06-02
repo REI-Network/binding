@@ -262,7 +262,16 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
                     {
                         const auto& stakeInfo = m_s.stakeInfo(_addr);
                         if (stakeInfo)
+                        {
+                            u256 dailyFee;
+                            if (schedule.enableDAO)
+                                // load daily fee from contract storge
+                                dailyFee = m_s.storage(ConfigAddress, u256{"0x0000000000000000000000000000000000000000000000000000000000000015"});
+                            else
+                                // load daily fee from schedule
+                                dailyFee = schedule.dailyFee;
                             return stakeInfo->estimateFee(timestamp, m_s.balance(FeeManagerAddress), schedule.dailyFee);
+                        }
                     }
 
                     return 0;
