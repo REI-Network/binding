@@ -42,6 +42,10 @@ EVMSchedule const& ChainOperationParams::forkScheduleForBlockNumber(u256 const& 
 {
     if (_blockNumber >= experimentalForkBlock)
         return ExperimentalSchedule;
+    else if (_blockNumber >= daoHardforkBlock)
+        return DAOSchedule;
+    else if (_blockNumber >= betterPOSForkBlock)
+        return BetterPOSSchedule;
     else if (_blockNumber >= freeStakingForkBlock)
         return FreeStakingSchedule;
     else if (_blockNumber >= berlinForkBlock)
