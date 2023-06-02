@@ -22,6 +22,7 @@ static std::string const c_genesisInfoREIMainNetwork = std::string() +
         "muirGlacierForkBlock": "0x00",
         "berlinForkBlock": "0x00",
         "freeStakingForkBlock": "0x558c9d",
+        "betterPOSForkBlock": "0x92ed85",
         "networkID" : "0xbabd",
         "chainID": "0xbabd",
         "maximumExtraDataSize": "0x2000",

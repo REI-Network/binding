@@ -87,6 +87,8 @@ struct EVMSchedule
     unsigned estimateFeeGas = 3000;
     u256 dailyFee = u256{fromHex("0x4e1003b28d92800000")};
 
+    bool enableDAO = false;
+
     boost::optional<u256> blockRewardOverwrite;
 
     bool staticCallDepthLimit() const { return !eip150Mode; }
@@ -211,6 +213,17 @@ static const EVMSchedule FreeStakingSchedule = [] {
     EVMSchedule schedule = BerlinSchedule;
     schedule.enableFreeStaking = true;
     schedule.supportedPrecompiled[Address{0xff}] = true;
+    return schedule;
+}();
+
+// NOTE: The better pos hard fork did not make any changes to the EVM
+static const EVMSchedule BetterPOSSchedule = [] {
+    return FreeStakingSchedule;
+}();
+
+static const EVMSchedule DAOSchedule = [] {
+    EVMSchedule schedule = BetterPOSSchedule;
+    schedule.enableDAO = true;
     return schedule;
 }();
 
