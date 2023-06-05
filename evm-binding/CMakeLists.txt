@@ -18,7 +18,7 @@ string(REGEX REPLACE "[\r\n\"]" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
 target_include_directories(evm-binding PRIVATE ${CMAKE_JS_INC} ${NODE_ADDON_API_DIR})
 
 # Link libraries
-target_link_directories(evm-binding PUBLIC ${JSONCPP_ROOT}/lib)
+target_link_directories(evm-binding PUBLIC ${JSONCPP_ROOT}/lib64)
 target_link_libraries(evm-binding PUBLIC devcore devcrypto ethashseal ethcore ethereum evm ${CMAKE_JS_LIB})
 
 # define NAPI_VERSION
