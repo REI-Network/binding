@@ -5,10 +5,10 @@ hunter_config(
     cryptopp
     VERSION
     ${HUNTER_cryptopp_VERSION} 
-    CMAKE_ARGS 
+    CMAKE_ARGS
     CMAKE_SYSTEM_VERSION=NO
     CMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-    CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+    CMAKE_CXX_FLAGS=-DCRYPTOPP_ARM_CRC32_AVAILABLE=0
 )
 
 hunter_config(
