@@ -129,7 +129,7 @@ void ChainParams::loadConfig(
     setOptionalU256Parameter(berlinForkBlock, c_berlinForkBlock);
     setOptionalU256Parameter(freeStakingForkBlock, c_freeStakingForkBlock);
     setOptionalU256Parameter(betterPOSForkBlock, c_betterPOSForkBlock);
-    setOptionalU256Parameter(daoForkBlock, c_daoForkBlock);
+    setOptionalU256Parameter(reiDAOForkBlock, c_reiDAOForkBlock);
     setOptionalU256Parameter(experimentalForkBlock, c_experimentalForkBlock);
 
     lastForkBlock = findMaxForkBlockNumber(params);

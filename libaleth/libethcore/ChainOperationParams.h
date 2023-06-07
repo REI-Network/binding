@@ -106,7 +106,7 @@ public:
     u256 berlinForkBlock = c_infiniteBlockNumber;
     u256 freeStakingForkBlock = c_infiniteBlockNumber;
     u256 betterPOSForkBlock = c_infiniteBlockNumber;
-    u256 daoForkBlock = c_infiniteBlockNumber;
+    u256 reiDAOForkBlock = c_infiniteBlockNumber;
     u256 lastForkBlock = c_infiniteBlockNumber;
     AdditionalEIPs lastForkAdditionalEIPs;
     int chainID = 0;    // Distinguishes different chains (mainnet, Ropsten, etc).

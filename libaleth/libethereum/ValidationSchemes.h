@@ -53,7 +53,7 @@ extern std::string const c_muirGlacierForkBlock;
 extern std::string const c_berlinForkBlock;
 extern std::string const c_freeStakingForkBlock;
 extern std::string const c_betterPOSForkBlock;
-extern std::string const c_daoForkBlock;
+extern std::string const c_reiDAOForkBlock;
 extern std::string const c_experimentalForkBlock;
 extern std::string const c_accountStartNonce;
 extern std::string const c_maximumExtraDataSize;

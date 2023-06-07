@@ -23,6 +23,7 @@ static std::string const c_genesisInfoREIDevNetwork = std::string() +
         "berlinForkBlock": "0x00",
         "freeStakingForkBlock": "0x00",
         "betterPOSForkBlock": "0x00",
+        "reiDAOForkBlock": "0x32",
         "networkID" : "0x5c1b",
         "chainID": "0x5c1b",
         "maximumExtraDataSize": "0x2000",

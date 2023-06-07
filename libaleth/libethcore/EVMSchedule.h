@@ -221,7 +221,7 @@ static const EVMSchedule BetterPOSSchedule = [] {
     return FreeStakingSchedule;
 }();
 
-static const EVMSchedule DAOSchedule = [] {
+static const EVMSchedule ReiDAOSchedule = [] {
     EVMSchedule schedule = BetterPOSSchedule;
     schedule.enableDAO = true;
     return schedule;
