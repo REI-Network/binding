@@ -6,7 +6,7 @@
 
 static dev::h256 const c_genesisStateRootREIMainNetwork("2fa2d04b5f646c95f481ae147b4188b9294d9f6b2f97eaa3509186159acde524");
 static std::string const c_genesisInfoREIMainNetwork = std::string() +
-                                                       R"E(
+                                                    R"E(
 {
     "sealEngine": "NoProof",
     "params": {
