@@ -6,7 +6,7 @@
 
 static dev::h256 const c_genesisStateRootREIMainNetwork("2fa2d04b5f646c95f481ae147b4188b9294d9f6b2f97eaa3509186159acde524");
 static std::string const c_genesisInfoREIMainNetwork = std::string() +
-                                                    R"E(
+                                                       R"E(
 {
     "sealEngine": "NoProof",
     "params": {
@@ -23,7 +23,7 @@ static std::string const c_genesisInfoREIMainNetwork = std::string() +
         "berlinForkBlock": "0x00",
         "freeStakingForkBlock": "0x558c9d",
         "betterPOSForkBlock": "0x92ed85",
-        "reiDAOForkBlock": "0xe62c29",
+        "reiDAOForkBlock": "0xf0b21a",
         "networkID" : "0xbabd",
         "chainID": "0xbabd",
         "maximumExtraDataSize": "0x2000",
